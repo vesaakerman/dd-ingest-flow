@@ -41,9 +41,9 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
 
     @Override
     public void run(final DdIngestFlowConfiguration configuration, final Environment environment) {
-        final ExecutorService taskExecutor = configuration.getIngest().getTaskQueue().build(environment);
+        final ExecutorService taskExecutor = configuration.getImportConf().getTaskQueue().build(environment);
         final DepositSequenceManager depositSequenceManager = new DepositSequenceManager(taskExecutor);
-        final Inbox inbox = new Inbox(configuration.getIngest().getImportBaseDir(), depositSequenceManager);
+        final Inbox inbox = new Inbox(configuration.getImportConf().getInbox(), depositSequenceManager);
         environment.lifecycle().manage(inbox);
     }
 

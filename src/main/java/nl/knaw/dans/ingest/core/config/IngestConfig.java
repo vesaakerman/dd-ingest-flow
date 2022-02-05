@@ -24,18 +24,65 @@ import java.nio.file.Path;
 public class IngestConfig {
     @NotNull
     @Valid
-    private Path importBaseDir;
+    private Path inbox;
+
+    @NotNull
+    @Valid
+    private Path outbox;
+
+    @NotNull
+    @Valid
+    private String fileExclusionPattern;
+
+    @NotNull
+    @Valid
+    private String depositorRole;
+
+    @Valid
+    private boolean deduplicate;
 
     @NotNull
     @Valid
     private ExecutorServiceFactory taskQueue;
 
-    public Path getImportBaseDir() {
-        return importBaseDir;
+    public Path getInbox() {
+        return inbox;
     }
 
-    public void setImportBaseDir(Path importBaseDir) {
-        this.importBaseDir = importBaseDir;
+    public void setInbox(Path inbox) {
+        this.inbox = inbox;
+    }
+
+    public Path getOutbox() {
+        return outbox;
+    }
+
+    public void setOutbox(Path outbox) {
+        this.outbox = outbox;
+    }
+
+    public String getFileExclusionPattern() {
+        return fileExclusionPattern;
+    }
+
+    public void setFileExclusionPattern(String fileExclusionPattern) {
+        this.fileExclusionPattern = fileExclusionPattern;
+    }
+
+    public String getDepositorRole() {
+        return depositorRole;
+    }
+
+    public void setDepositorRole(String depositorRole) {
+        this.depositorRole = depositorRole;
+    }
+
+    public boolean isDeduplicate() {
+        return deduplicate;
+    }
+
+    public void setDeduplicate(boolean deduplicate) {
+        this.deduplicate = deduplicate;
     }
 
     public ExecutorServiceFactory getTaskQueue() {
