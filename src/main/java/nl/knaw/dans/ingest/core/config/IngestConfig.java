@@ -32,6 +32,10 @@ public class IngestConfig {
 
     @NotNull
     @Valid
+    private Path zipWrappingTempDir;
+
+    @NotNull
+    @Valid
     private String fileExclusionPattern;
 
     @NotNull
@@ -59,6 +63,14 @@ public class IngestConfig {
 
     public void setOutbox(Path outbox) {
         this.outbox = outbox;
+    }
+
+    public Path getZipWrappingTempDir() {
+        return zipWrappingTempDir;
+    }
+
+    public void setZipWrappingTempDir(Path zipWrappingTempDir) {
+        this.zipWrappingTempDir = zipWrappingTempDir;
     }
 
     public String getFileExclusionPattern() {
