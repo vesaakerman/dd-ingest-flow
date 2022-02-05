@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package nl.knaw.dans.ingest.core;
 
-package nl.knaw.dans.ingest;
+import io.dropwizard.lifecycle.Managed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.Configuration;
-import nl.knaw.dans.ingest.core.config.IngestConfig;
+import java.nio.file.Path;
 
-import javax.validation.constraints.NotEmpty;
+public class Inbox implements Managed {
+    private static final Logger log = LoggerFactory.getLogger(Inbox.class);
+    private final Path inboxDir;
 
-public class DdIngestFlowConfiguration extends Configuration {
-
-    private IngestConfig ingest;
-
-    public IngestConfig getIngest() {
-        return ingest;
+    public Inbox(Path path) {
+        this.inboxDir = path;
     }
 
-    public void setIngest(IngestConfig ingest) {
-        this.ingest = ingest;
+    @Override
+    public void start() throws Exception {
+        log.trace("Starting inbox {}", inboxDir);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        log.trace("Stopping inbox {}", inboxDir);
     }
 }

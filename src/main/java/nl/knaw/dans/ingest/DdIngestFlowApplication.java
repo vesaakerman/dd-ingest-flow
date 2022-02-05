@@ -19,6 +19,9 @@ package nl.knaw.dans.ingest;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.ingest.core.Inbox;
+
+import java.util.concurrent.ExecutorService;
 
 public class DdIngestFlowApplication extends Application<DdIngestFlowConfiguration> {
 
@@ -28,17 +31,18 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
 
     @Override
     public String getName() {
-        return "Dd Ingest Flow";
+        return "DD Ingest Flow";
     }
 
     @Override
     public void initialize(final Bootstrap<DdIngestFlowConfiguration> bootstrap) {
-        // TODO: application initialization
     }
 
     @Override
     public void run(final DdIngestFlowConfiguration configuration, final Environment environment) {
-
+        final ExecutorService taskExecutor = configuration.getIngest().getTaskQueue().build(environment);
+        final Inbox inbox = new Inbox(configuration.getIngest().getImportBaseDir());
+        environment.lifecycle().manage(inbox);
     }
 
 }

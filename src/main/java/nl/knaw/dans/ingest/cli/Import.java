@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package nl.knaw.dans.ingest.cli;
 
-package nl.knaw.dans.ingest;
+import io.dropwizard.Application;
+import io.dropwizard.cli.ServerCommand;
+import nl.knaw.dans.ingest.DdIngestFlowConfiguration;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.Configuration;
-import nl.knaw.dans.ingest.core.config.IngestConfig;
+public class Import extends ServerCommand<DdIngestFlowConfiguration> {
 
-import javax.validation.constraints.NotEmpty;
-
-public class DdIngestFlowConfiguration extends Configuration {
-
-    private IngestConfig ingest;
-
-    public IngestConfig getIngest() {
-        return ingest;
+    public Import(Application<DdIngestFlowConfiguration> application) {
+        super(application);
     }
 
-    public void setIngest(IngestConfig ingest) {
-        this.ingest = ingest;
-    }
+
 }

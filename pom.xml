@@ -30,7 +30,7 @@
     <artifactId>dd-ingest-flow</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>Dd Ingest Flow</name>
+    <name>DD Ingest Flow</name>
     <url>https://github.com/DANS-KNAW/dd-ingest-flow</url>
     <description>Ingests auto-deposits into a Dataverse instance</description>
     <inceptionYear>2022</inceptionYear>
@@ -45,7 +45,11 @@
     </scm>
 
     <dependencies>
-        <!-- Add project-specific dependencies here -->
+        <dependency>
+            <groupId>nl.knaw.dans</groupId>
+            <artifactId>dans-java-utils</artifactId>
+            <version>0.0.5</version>
+        </dependency>
     </dependencies>
 
     <repositories>
