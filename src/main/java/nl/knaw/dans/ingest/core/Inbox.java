@@ -41,7 +41,6 @@ public class Inbox implements Managed {
         List<Path> files = Files.list(inboxDir).filter(Files::isRegularFile).sorted().collect(Collectors.toList());
         log.debug("Found files: {}", files);
         for (Path f : files) {
-            Thread.sleep(20); // TODO: REMOVE
             depositSequenceManager.scheduleDeposit(new Deposit(f));
         }
     }
