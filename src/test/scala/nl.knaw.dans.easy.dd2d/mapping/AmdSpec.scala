@@ -127,7 +127,7 @@ class AmdSpec extends TestSupportFixture with BlockCitation {
               </damd:administrative-md>
     Amd.toDateOfDeposit(xml) shouldBe Some("2019-04-25")
   }
-  /////
+
   "toPublicationDate" should "use date of first change to PUBLISHEd state" in {
     val xml =
     <damd:administrative-md version="0.1" xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:foxml="info:fedora/fedora-system:def/foxml#">
