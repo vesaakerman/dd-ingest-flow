@@ -70,7 +70,7 @@ class DepositSequencer implements Runnable {
             Deposit deposit = localQueue.poll();
             if (deposit == null) {
                 log.debug("No more deposits. Removing editor for DOI {}", targetDoi);
-                depositSequenceManager.removeEditor(this);
+                depositSequenceManager.removeSequencer(this);
             }
             return deposit;
         }

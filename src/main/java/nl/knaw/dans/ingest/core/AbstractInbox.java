@@ -24,10 +24,12 @@ import java.nio.file.Path;
 public abstract class AbstractInbox {
     private static final Logger log = LoggerFactory.getLogger(AbstractInbox.class);
     protected final Path inboxDir;
+    protected final Path outBoxDir;
     protected final DepositSequenceManager depositSequenceManager;
 
-    public AbstractInbox(Path path, DepositSequenceManager depositSequenceManager) {
-        this.inboxDir = path;
+    public AbstractInbox(Path inboxDir, Path outBoxDir, DepositSequenceManager depositSequenceManager) {
+        this.inboxDir = inboxDir;
+        this.outBoxDir = outBoxDir;
         this.depositSequenceManager = depositSequenceManager;
     }
 }

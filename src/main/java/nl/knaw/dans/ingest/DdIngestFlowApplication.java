@@ -19,10 +19,12 @@ package nl.knaw.dans.ingest;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.easy.dd2d.DepositIngestTaskFactory;
 import nl.knaw.dans.ingest.core.ManagedInbox;
 import nl.knaw.dans.ingest.core.sequencing.DepositSequenceManager;
 
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 
 public class DdIngestFlowApplication extends Application<DdIngestFlowConfiguration> {
 
@@ -43,8 +45,9 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
     public void run(final DdIngestFlowConfiguration configuration, final Environment environment) {
         final ExecutorService taskExecutor = configuration.getImportConf().getTaskQueue().build(environment);
         final DepositSequenceManager depositSequenceManager = new DepositSequenceManager(taskExecutor);
-        final ManagedInbox autoIngestInbox = new ManagedInbox(configuration.getAutoIngest().getInbox(), depositSequenceManager);
-        environment.lifecycle().manage(autoIngestInbox);
+//        final ManagedInbox autoIngestInbox = new ManagedInbox(configuration.getAutoIngest().getInbox(), depositSequenceManager);
+//        environment.lifecycle().manage(autoIngestInbox);
+
 
 
 

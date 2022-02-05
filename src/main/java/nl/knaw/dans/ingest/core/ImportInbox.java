@@ -21,11 +21,16 @@ import java.nio.file.Path;
 
 public class ImportInbox extends AbstractInbox {
 
-    public ImportInbox(Path path, DepositSequenceManager depositSequenceManager) {
-        super(path, depositSequenceManager);
+    public ImportInbox(Path inboxDir, Path outboxDir, DepositSequenceManager depositSequenceManager) {
+        super(inboxDir, outboxDir, depositSequenceManager);
     }
 
     public void startBatch(String group, String date, String batch) {
+        // 1. Get list of deposit directories
+        // 2. Convert to DepositTasks with factory
+        // 3. Sort with sorter
+        // 4.
+
 
     }
 }

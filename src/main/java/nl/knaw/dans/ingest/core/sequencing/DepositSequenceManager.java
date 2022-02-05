@@ -37,22 +37,23 @@ public class DepositSequenceManager {
 
     public synchronized void scheduleDeposit(Deposit deposit) {
         log.trace("Enqueuing deposit");
-        DepositSequencer editor = editors.get(deposit.getDoi());
-        if (editor == null) {
+        // TODO: Use Is-Version-Of in autoIngest service (DOI is not available there)
+        DepositSequencer sequencer = editors.get(deposit.getDoi());
+        if (sequencer == null) {
             log.debug("Creating NEW editor for DOI {}", deposit.getDoi());
-            editor = new DepositSequencer(this, deposit);
-            editors.put(deposit.getDoi(), editor);
-            executorService.execute(editor);
+            sequencer = new DepositSequencer(this, deposit);
+            editors.put(deposit.getDoi(), sequencer);
+            executorService.execute(sequencer);
         }
         else {
             log.debug("Using EXISTING editor for DOI {}", deposit.getDoi());
-            editor.enqueue(deposit);
+            sequencer.enqueue(deposit);
         }
     }
 
-    synchronized void removeEditor(DepositSequencer editor) {
-        log.trace("Removing editor for DOI {}", editor.getTargetDoi());
-        editors.remove(editor.getTargetDoi());
+    synchronized void removeSequencer(DepositSequencer sequencer) {
+        log.trace("Removing editor for DOI {}", sequencer.getTargetDoi());
+        editors.remove(sequencer.getTargetDoi());
     }
 
 }

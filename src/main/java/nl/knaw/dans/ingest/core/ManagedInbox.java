@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 public class ManagedInbox extends AbstractInbox implements Managed {
     private static final Logger log = LoggerFactory.getLogger(ManagedInbox.class);
 
-    public ManagedInbox(Path path, DepositSequenceManager depositSequenceManager) {
-        super(path, depositSequenceManager);
+    public ManagedInbox(Path inboxDir, Path outboxDir, DepositSequenceManager depositSequenceManager) {
+        super(inboxDir, outboxDir, depositSequenceManager);
     }
 
     @Override
