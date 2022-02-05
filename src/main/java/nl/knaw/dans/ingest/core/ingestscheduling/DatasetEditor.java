@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core;
+package nl.knaw.dans.ingest.core.ingestscheduling;
 
+import nl.knaw.dans.ingest.core.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class DatasetEditor implements Runnable {
+class DatasetEditor implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(DatasetEditor.class);
-    private final Queue<Deposit> depositQueue2 = new ConcurrentLinkedDeque<>();
-    private final DatasetEditorMap datasetEditorMap;
+    private final Queue<Deposit> localQueue = new ConcurrentLinkedDeque<>();
+    private final DepositIngestManager depositIngestManager;
     private final String targetDoi;
 
-    public DatasetEditor(DatasetEditorMap datasetEditorMap, Deposit deposit) {
-        this.datasetEditorMap = datasetEditorMap;
+    public DatasetEditor(DepositIngestManager depositIngestManager, Deposit deposit) {
+        this.depositIngestManager = depositIngestManager;
         this.targetDoi = deposit.getDoi();
         enqueue(deposit);
     }
@@ -36,7 +37,7 @@ public class DatasetEditor implements Runnable {
     public synchronized void enqueue(Deposit deposit) {
         log.debug("Adding deposit {} to editor queue", deposit);
         if (deposit.getDoi().equals(targetDoi)) {
-            depositQueue2.add(deposit);
+            localQueue.add(deposit);
         }
         else {
             throw new IllegalArgumentException("Deposit DOI " + deposit.getDoi() + " is different from target DOI " + targetDoi);
@@ -49,7 +50,7 @@ public class DatasetEditor implements Runnable {
 
     @Override
     public void run() {
-        Deposit deposit = depositQueue2.poll();
+        Deposit deposit = localQueue.poll();
 
         while (deposit != null) {
             log.debug("Processing deposit {}", deposit);
@@ -65,11 +66,11 @@ public class DatasetEditor implements Runnable {
     }
 
     private Deposit getNextDeposit() {
-        synchronized (datasetEditorMap) {
-            Deposit deposit = depositQueue2.poll();
+        synchronized (depositIngestManager) {
+            Deposit deposit = localQueue.poll();
             if (deposit == null) {
                 log.debug("No more deposits. Removing editor for DOI {}", targetDoi);
-                datasetEditorMap.removeEditor(this);
+                depositIngestManager.removeEditor(this);
             }
             return deposit;
         }

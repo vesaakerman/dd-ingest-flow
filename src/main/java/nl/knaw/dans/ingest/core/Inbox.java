@@ -16,6 +16,7 @@
 package nl.knaw.dans.ingest.core;
 
 import io.dropwizard.lifecycle.Managed;
+import nl.knaw.dans.ingest.core.ingestscheduling.DepositIngestManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +28,11 @@ import java.util.stream.Collectors;
 public class Inbox implements Managed {
     private static final Logger log = LoggerFactory.getLogger(Inbox.class);
     private final Path inboxDir;
-    private final DatasetEditorMap datasetEditorMap;
+    private final DepositIngestManager depositIngestManager;
 
-    public Inbox(Path path, DatasetEditorMap datasetEditorMap) {
+    public Inbox(Path path, DepositIngestManager depositIngestManager) {
         this.inboxDir = path;
-        this.datasetEditorMap = datasetEditorMap;
+        this.depositIngestManager = depositIngestManager;
     }
 
     @Override
@@ -40,8 +41,8 @@ public class Inbox implements Managed {
         List<Path> files = Files.list(inboxDir).filter(Files::isRegularFile).sorted().collect(Collectors.toList());
         log.debug("Found files: {}", files);
         for (Path f : files) {
-            Thread.sleep(20);
-            datasetEditorMap.enqueueDeposit(new Deposit(f));
+            Thread.sleep(20); // TODO: REMOVE
+            depositIngestManager.scheduleDeposit(new Deposit(f));
         }
     }
 

@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core;
+package nl.knaw.dans.ingest.core.ingestscheduling;
 
+import nl.knaw.dans.ingest.core.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutorService;
 
-public class DatasetEditorMap {
-    private static final Logger log = LoggerFactory.getLogger(DatasetEditorMap.class);
+/**
+ * Manages the process of ingesting deposits in the correct order by ensuring that deposits that target the same dataset are not concurrently scheduled on different threads. If an unfinished deposit
+ * for the same dataset is still present, the next deposit for that dataset will be queued on the same thread, ensuring that it cannot overtake the already processing deposit.
+ */
+public class DepositIngestManager {
+    private static final Logger log = LoggerFactory.getLogger(DepositIngestManager.class);
     private final LinkedHashMap<String, DatasetEditor> editors = new LinkedHashMap<>();
     private final ExecutorService executorService;
 
-    public DatasetEditorMap(ExecutorService executorService) {
+    public DepositIngestManager(ExecutorService executorService) {
         this.executorService = executorService;
     }
 
-    public synchronized void enqueueDeposit(Deposit deposit) {
+    public synchronized void scheduleDeposit(Deposit deposit) {
         log.trace("Enqueuing deposit");
         DatasetEditor editor = editors.get(deposit.getDoi());
         if (editor == null) {
@@ -45,7 +50,7 @@ public class DatasetEditorMap {
         }
     }
 
-    public synchronized void removeEditor(DatasetEditor editor) {
+    synchronized void removeEditor(DatasetEditor editor) {
         log.trace("Removing editor for DOI {}", editor.getTargetDoi());
         editors.remove(editor.getTargetDoi());
     }
