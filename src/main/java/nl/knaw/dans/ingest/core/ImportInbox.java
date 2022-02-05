@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core.config;
+package nl.knaw.dans.ingest.core;
 
-public class DataverseConfigScala {
-    private HttpServiceConfig http;
-    private DataverseApiConfig api;
+import nl.knaw.dans.ingest.core.sequencing.DepositSequenceManager;
 
-    public HttpServiceConfig getHttp() {
-        return http;
+import java.nio.file.Path;
+
+public class ImportInbox extends AbstractInbox {
+
+    public ImportInbox(Path path, DepositSequenceManager depositSequenceManager) {
+        super(path, depositSequenceManager);
     }
 
-    public void setHttp(HttpServiceConfig http) {
-        this.http = http;
-    }
+    public void startBatch(String group, String date, String batch) {
 
-    public DataverseApiConfig getApi() {
-        return api;
-    }
-
-    public void setApi(DataverseApiConfig api) {
-        this.api = api;
     }
 }

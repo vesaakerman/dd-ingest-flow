@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core.config;
+package nl.knaw.dans.ingest.resources;
 
-public class DataverseConfigScala {
-    private HttpServiceConfig http;
-    private DataverseApiConfig api;
+import nl.knaw.dans.ingest.core.AbstractInbox;
+import nl.knaw.dans.ingest.core.ImportInbox;
 
-    public HttpServiceConfig getHttp() {
-        return http;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Path("/import")
+@Produces(MediaType.APPLICATION_JSON)
+public class ImportResource {
+
+    private final ImportInbox inbox;
+
+    public ImportResource(ImportInbox inbox) {
+        this.inbox = inbox;
     }
 
-    public void setHttp(HttpServiceConfig http) {
-        this.http = http;
-    }
+//    public void startBatch()
+    
 
-    public DataverseApiConfig getApi() {
-        return api;
-    }
-
-    public void setApi(DataverseApiConfig api) {
-        this.api = api;
-    }
 }
