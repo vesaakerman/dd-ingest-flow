@@ -17,23 +17,32 @@ package nl.knaw.dans.ingest.core.config;
 
 import java.net.URI;
 
-public class DataverseConfigScala {
-    private HttpServiceConfig http;
-    private DataverseApiConfig api;
+public class HttpServiceConfig {
+    private URI baseUrl;
+    private int connectionTimeoutMs;
+    private int readTimeoutMs;
 
-    public HttpServiceConfig getHttp() {
-        return http;
+    public URI getBaseUrl() {
+        return baseUrl;
     }
 
-    public void setHttp(HttpServiceConfig http) {
-        this.http = http;
+    public void setBaseUrl(URI baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
-    public DataverseApiConfig getApi() {
-        return api;
+    public int getConnectionTimeoutMs() {
+        return connectionTimeoutMs;
     }
 
-    public void setApi(DataverseApiConfig api) {
-        this.api = api;
+    public void setConnectionTimeoutMs(int connectionTimeoutMs) {
+        this.connectionTimeoutMs = connectionTimeoutMs;
+    }
+
+    public int getReadTimeoutMs() {
+        return readTimeoutMs;
+    }
+
+    public void setReadTimeoutMs(int readTimeoutMs) {
+        this.readTimeoutMs = readTimeoutMs;
     }
 }

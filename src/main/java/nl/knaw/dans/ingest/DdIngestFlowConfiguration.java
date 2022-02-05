@@ -19,6 +19,7 @@ package nl.knaw.dans.ingest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import nl.knaw.dans.ingest.core.config.DataverseConfigScala;
+import nl.knaw.dans.ingest.core.config.HttpServiceConfig;
 import nl.knaw.dans.ingest.core.config.IngestConfig;
 
 public class DdIngestFlowConfiguration extends Configuration {
@@ -26,6 +27,8 @@ public class DdIngestFlowConfiguration extends Configuration {
     private IngestConfig importConf;
     private IngestConfig autoIngest;
     private DataverseConfigScala dataverse;
+    private HttpServiceConfig validateDansBag;
+    private HttpServiceConfig managePrestaging;
 
     @JsonProperty("import")
     public IngestConfig getImportConf() {
@@ -51,5 +54,21 @@ public class DdIngestFlowConfiguration extends Configuration {
 
     public void setDataverse(DataverseConfigScala dataverse) {
         this.dataverse = dataverse;
+    }
+
+    public HttpServiceConfig getValidateDansBag() {
+        return validateDansBag;
+    }
+
+    public void setValidateDansBag(HttpServiceConfig validateDansBag) {
+        this.validateDansBag = validateDansBag;
+    }
+
+    public HttpServiceConfig getManagePrestaging() {
+        return managePrestaging;
+    }
+
+    public void setManagePrestaging(HttpServiceConfig managePrestaging) {
+        this.managePrestaging = managePrestaging;
     }
 }
