@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core.ingestscheduling;
+package nl.knaw.dans.ingest.core.sequencing;
 
 import nl.knaw.dans.ingest.core.Deposit;
 import org.slf4j.Logger;
@@ -26,21 +26,21 @@ import java.util.concurrent.ExecutorService;
  * Manages the process of ingesting deposits in the correct order by ensuring that deposits that target the same dataset are not concurrently scheduled on different threads. If an unfinished deposit
  * for the same dataset is still present, the next deposit for that dataset will be queued on the same thread, ensuring that it cannot overtake the already processing deposit.
  */
-public class DepositIngestManager {
-    private static final Logger log = LoggerFactory.getLogger(DepositIngestManager.class);
-    private final LinkedHashMap<String, DatasetEditor> editors = new LinkedHashMap<>();
+public class DepositSequenceManager {
+    private static final Logger log = LoggerFactory.getLogger(DepositSequenceManager.class);
+    private final LinkedHashMap<String, DepositSequencer> editors = new LinkedHashMap<>();
     private final ExecutorService executorService;
 
-    public DepositIngestManager(ExecutorService executorService) {
+    public DepositSequenceManager(ExecutorService executorService) {
         this.executorService = executorService;
     }
 
     public synchronized void scheduleDeposit(Deposit deposit) {
         log.trace("Enqueuing deposit");
-        DatasetEditor editor = editors.get(deposit.getDoi());
+        DepositSequencer editor = editors.get(deposit.getDoi());
         if (editor == null) {
             log.debug("Creating NEW editor for DOI {}", deposit.getDoi());
-            editor = new DatasetEditor(this, deposit);
+            editor = new DepositSequencer(this, deposit);
             editors.put(deposit.getDoi(), editor);
             executorService.execute(editor);
         }
@@ -50,7 +50,7 @@ public class DepositIngestManager {
         }
     }
 
-    synchronized void removeEditor(DatasetEditor editor) {
+    synchronized void removeEditor(DepositSequencer editor) {
         log.trace("Removing editor for DOI {}", editor.getTargetDoi());
         editors.remove(editor.getTargetDoi());
     }

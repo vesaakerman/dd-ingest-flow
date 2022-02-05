@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core.ingestscheduling;
+package nl.knaw.dans.ingest.core.sequencing;
 
 import nl.knaw.dans.ingest.core.Deposit;
 import org.slf4j.Logger;
@@ -22,14 +22,14 @@ import org.slf4j.LoggerFactory;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-class DatasetEditor implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(DatasetEditor.class);
+class DepositSequencer implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(DepositSequencer.class);
     private final Queue<Deposit> localQueue = new ConcurrentLinkedDeque<>();
-    private final DepositIngestManager depositIngestManager;
+    private final DepositSequenceManager depositSequenceManager;
     private final String targetDoi;
 
-    public DatasetEditor(DepositIngestManager depositIngestManager, Deposit deposit) {
-        this.depositIngestManager = depositIngestManager;
+    public DepositSequencer(DepositSequenceManager depositSequenceManager, Deposit deposit) {
+        this.depositSequenceManager = depositSequenceManager;
         this.targetDoi = deposit.getDoi();
         enqueue(deposit);
     }
@@ -66,11 +66,11 @@ class DatasetEditor implements Runnable {
     }
 
     private Deposit getNextDeposit() {
-        synchronized (depositIngestManager) {
+        synchronized (depositSequenceManager) {
             Deposit deposit = localQueue.poll();
             if (deposit == null) {
                 log.debug("No more deposits. Removing editor for DOI {}", targetDoi);
-                depositIngestManager.removeEditor(this);
+                depositSequenceManager.removeEditor(this);
             }
             return deposit;
         }

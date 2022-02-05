@@ -23,6 +23,7 @@ import java.nio.file.Path;
 
 public class Deposit {
     private final int delay;
+    private final String doi;
     private final String filename;
     private final PropertiesConfiguration configuration = new PropertiesConfiguration();
 
@@ -30,10 +31,11 @@ public class Deposit {
         configuration.load(path.toFile());
         filename = path.getFileName().toString();
         delay = configuration.getInteger("delay", 0);
+        doi = configuration.getString("doi");
     }
 
     public String getDoi() {
-        return "fixed-doi";
+        return doi;
     }
 
     public int getDelay() {
