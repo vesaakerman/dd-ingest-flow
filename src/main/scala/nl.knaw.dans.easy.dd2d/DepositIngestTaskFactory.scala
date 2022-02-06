@@ -19,10 +19,15 @@ import better.files.File
 import nl.knaw.dans.easy.dd2d.dansbag.DansBagValidator
 import nl.knaw.dans.easy.dd2d.migrationinfo.MigrationInfo
 import nl.knaw.dans.lib.dataverse.DataverseInstance
+import org.apache.commons.csv.{ CSVFormat, CSVParser }
+import org.apache.commons.io.FileUtils
 
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
-import scala.xml.Elem
+import scala.collection.JavaConverters.{ asScalaBufferConverter, asScalaIteratorConverter }
+import scala.util.Try
+import scala.xml.{ Elem, XML }
 
 /**
  * Factory for creating ingest tasks.
@@ -101,4 +106,39 @@ class DepositIngestTaskFactory(isMigrated: Boolean = false,
         reportIdToTerm,
         outboxDir: File)
   }
+}
+
+object DepositIngestTaskFactory {
+  def getActiveMetadataBlocks(dataverse: DataverseInstance): Try[List[String]] = {
+    for {
+      result <- dataverse.dataverse("root").listMetadataBocks()
+      blocks <- result.data
+    } yield blocks.map(_.name)
+  }
+
+  def readXml(file: java.io.File): Elem = {
+    XML.loadFile(file)
+  }
+
+  def loadCsvToMap(csvFile: File, keyColumn: String, valueColumn: String): Try[Map[String, String]] = {
+    import resource.managed
+
+    def csvParse(csvParser: CSVParser): Map[String, String] = {
+      csvParser.iterator().asScala
+        .map { r => (r.get(keyColumn), r.get(valueColumn)) }.toMap
+    }
+
+    managed(CSVParser.parse(
+      csvFile.toJava,
+      StandardCharsets.UTF_8,
+      CSVFormat.RFC4180.withFirstRecordAsHeader())).map(csvParse).tried
+  }
+
+  def loadTxtToUriList(txtFile: File): Try[List[URI]] = Try {
+    FileUtils.readLines(txtFile.toJava, StandardCharsets.UTF_8).asScala.toList.map(new URI(_))
+  }
+
+  def appendSlash(uri: URI): URI = {
+    if (uri.getPath.endsWith("/")) uri
+    else new URI(uri + "/")  }
 }

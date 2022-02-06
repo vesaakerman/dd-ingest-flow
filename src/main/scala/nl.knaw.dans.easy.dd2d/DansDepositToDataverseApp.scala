@@ -176,3 +176,4 @@ class DansDepositToDataverseApp(configuration: Configuration, prestagedFiles: Bo
     } yield blocks.map(_.name)
   }
 }
+

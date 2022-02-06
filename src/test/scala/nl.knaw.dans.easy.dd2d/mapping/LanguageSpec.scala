@@ -23,11 +23,11 @@ import java.nio.file.Paths
 
 class LanguageSpec extends TestSupportFixture {
   private val iso1ToDataverseLanguage =
-    loadCsvToMap(File(Paths.get("src/main/assembly/dist/install/iso639-1-to-dv.csv").toAbsolutePath),
+    loadCsvToMap(File(Paths.get("src/main/assembly/dist/cfg/iso639-1-to-dv.csv").toAbsolutePath),
       keyColumn = "ISO639-1",
       valueColumn = "Dataverse-language").get
   private val iso2ToDataverseLanguage =
-    loadCsvToMap(File(Paths.get("src/main/assembly/dist/install/iso639-2-to-dv.csv").toAbsolutePath),
+    loadCsvToMap(File(Paths.get("src/main/assembly/dist/cfg/iso639-2-to-dv.csv").toAbsolutePath),
       keyColumn = "ISO639-2",
       valueColumn = "Dataverse-language").get
 

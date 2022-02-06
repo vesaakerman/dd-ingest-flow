@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy
 
 import better.files.File
+import nl.knaw.dans.lib.dataverse.DataverseInstance
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta
 import org.apache.commons.csv.{ CSVFormat, CSVParser }
 import org.apache.commons.io.FileUtils

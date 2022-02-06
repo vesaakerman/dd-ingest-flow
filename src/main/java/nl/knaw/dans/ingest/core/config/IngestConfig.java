@@ -36,6 +36,10 @@ public class IngestConfig {
 
     @NotNull
     @Valid
+    private Path mappingDefsDir;
+
+    @NotNull
+    @Valid
     private String fileExclusionPattern;
 
     @NotNull
@@ -71,6 +75,14 @@ public class IngestConfig {
 
     public void setZipWrappingTempDir(Path zipWrappingTempDir) {
         this.zipWrappingTempDir = zipWrappingTempDir;
+    }
+
+    public Path getMappingDefsDir() {
+        return mappingDefsDir;
+    }
+
+    public void setMappingDefsDir(Path mappingDefsDir) {
+        this.mappingDefsDir = mappingDefsDir;
     }
 
     public String getFileExclusionPattern() {

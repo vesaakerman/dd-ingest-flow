@@ -19,7 +19,12 @@ package nl.knaw.dans.ingest;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.ingest.core.config.DataverseConfigScala;
+import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.lib.dataverse.DataverseInstance;
+import nl.knaw.dans.lib.dataverse.DataverseInstanceConfig;
+import scala.Option;
 
 import java.util.concurrent.ExecutorService;
 
@@ -45,8 +50,13 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
 //        final ManagedInbox autoIngestInbox = new ManagedInbox(configuration.getAutoIngest().getInbox(), depositSequenceManager);
 //        environment.lifecycle().manage(autoIngestInbox);
 
+        final DepositIngestTaskFactoryWrapper importTaskFactoryWrapper = new DepositIngestTaskFactoryWrapper(
+            configuration.getImportConf(),
+            configuration.getDataverse(),
+            configuration.getManagePrestaging(),
+            configuration.getValidateDansBag());
 
-
+        // pass to import resource
 
     }
 
