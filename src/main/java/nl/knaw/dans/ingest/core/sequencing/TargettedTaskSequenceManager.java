@@ -35,23 +35,23 @@ public class TargettedTaskSequenceManager {
     }
 
     public synchronized void scheduleTask(TargettedTask targettedTask) {
-        log.trace("Enqueuing deposit");
+        log.trace("Scheduling targetted task {}", targettedTask);
         // TODO: Use Is-Version-Of in autoIngest service (DOI is not available there)
         TargettedTaskSequencer sequencer = sequencers.get(targettedTask.getTarget());
         if (sequencer == null) {
-            log.debug("Creating NEW editor for target {}", targettedTask.getTarget());
+            log.debug("Creating NEW sequencer for target {}", targettedTask.getTarget());
             sequencer = new TargettedTaskSequencer(this, targettedTask);
             sequencers.put(targettedTask.getTarget(), sequencer);
             executorService.execute(sequencer);
         }
         else {
-            log.debug("Using EXISTING editor for target {}", targettedTask.getTarget());
+            log.debug("Using EXISTING sequencer for target {}", targettedTask.getTarget());
             sequencer.enqueue(targettedTask);
         }
     }
 
     synchronized void removeSequencer(TargettedTaskSequencer sequencer) {
-        log.trace("Removing editor for target {}", sequencer.getTarget());
+        log.trace("Removing sequencer for target {}", sequencer.getTarget());
         sequencers.remove(sequencer.getTarget());
     }
 

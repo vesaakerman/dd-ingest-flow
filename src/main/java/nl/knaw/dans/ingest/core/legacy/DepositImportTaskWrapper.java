@@ -41,4 +41,11 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
         String created = task.deposit().tryBag().get().getMetadata().get("Created").get(0);
         return created.compareTo(o.task.deposit().tryBag().get().getMetadata().get("Created").get(0));
     }
+
+    @Override
+    public String toString() {
+        return "DepositImportTaskWrapper{" +
+            "task=" + task +
+            '}';
+    }
 }
