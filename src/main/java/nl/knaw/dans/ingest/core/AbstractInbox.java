@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.ingest.core;
 
+import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,12 @@ import java.nio.file.Path;
 public abstract class AbstractInbox {
     private static final Logger log = LoggerFactory.getLogger(AbstractInbox.class);
     protected final Path inboxDir;
-    protected final Path outBoxDir;
+    protected final DepositIngestTaskFactoryWrapper taskFactory;
     protected final TargettedTaskSequenceManager targettedTaskSequenceManager;
 
-    public AbstractInbox(Path inboxDir, Path outBoxDir, TargettedTaskSequenceManager targettedTaskSequenceManager) {
+    public AbstractInbox(Path inboxDir, DepositIngestTaskFactoryWrapper taskFactory, TargettedTaskSequenceManager targettedTaskSequenceManager) {
         this.inboxDir = inboxDir;
-        this.outBoxDir = outBoxDir;
+        this.taskFactory = taskFactory;
         this.targettedTaskSequenceManager = targettedTaskSequenceManager;
     }
 }

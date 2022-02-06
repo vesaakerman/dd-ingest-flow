@@ -16,16 +16,12 @@
 package nl.knaw.dans.ingest.core.legacy;
 
 import nl.knaw.dans.easy.dd2d.DepositIngestTask;
-import nl.knaw.dans.easy.dd2d.DepositMigrationTask;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTask;
-import org.apache.commons.configuration.ConfigurationException;
 
-import java.io.IOException;
+public class DepositImportTaskWrapper implements TargettedTask, Comparable<DepositImportTaskWrapper> {
+    private final DepositIngestTask task;
 
-public class DepositImportTaskWrapper implements TargettedTask {
-    private final DepositMigrationTask task;
-
-    public DepositImportTaskWrapper(DepositMigrationTask task) throws IOException, ConfigurationException {
+    public DepositImportTaskWrapper(DepositIngestTask task) {
         this.task = task;
     }
 
@@ -36,6 +32,13 @@ public class DepositImportTaskWrapper implements TargettedTask {
 
     @Override
     public void run() {
+        task.run();
+    }
 
+    @Override
+    public int compareTo(DepositImportTaskWrapper o) {
+        // TODO: make more robust
+        String created = task.deposit().tryBag().get().getMetadata().get("Created").get(0);
+        return created.compareTo(o.task.deposit().tryBag().get().getMetadata().get("Created").get(0));
     }
 }

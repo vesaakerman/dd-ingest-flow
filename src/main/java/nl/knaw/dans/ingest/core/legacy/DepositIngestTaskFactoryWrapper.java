@@ -16,7 +16,7 @@
 package nl.knaw.dans.ingest.core.legacy;
 
 import better.files.File;
-import nl.knaw.dans.easy.dd2d.DepositIngestTask;
+import nl.knaw.dans.easy.dd2d.Deposit;
 import nl.knaw.dans.easy.dd2d.DepositIngestTaskFactory;
 import nl.knaw.dans.easy.dd2d.ZipFileHandler;
 import nl.knaw.dans.easy.dd2d.dansbag.DansBagValidator;
@@ -32,6 +32,7 @@ import scala.collection.immutable.List;
 import scala.collection.immutable.Map;
 import scala.xml.Elem;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
@@ -114,7 +115,7 @@ public class DepositIngestTaskFactoryWrapper {
             .get();
     }
 
-    public DepositIngestTask createIngestTask(Path depositDir) {
-        return null;
+    public DepositImportTaskWrapper createIngestTask(Path depositDir)  {
+        return new DepositImportTaskWrapper(factory.createDepositIngestTask(new Deposit(File.apply(depositDir))));
     }
 }

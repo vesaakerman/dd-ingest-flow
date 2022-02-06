@@ -15,22 +15,51 @@
  */
 package nl.knaw.dans.ingest.core;
 
+import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
+// TODO: use Managed to cleanly interrupt when stopping service?
 public class ImportInbox extends AbstractInbox {
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public ImportInbox(Path inboxDir, Path outboxDir, TargettedTaskSequenceManager targettedTaskSequenceManager) {
-        super(inboxDir, outboxDir, targettedTaskSequenceManager);
+    public ImportInbox(Path inboxDir, DepositIngestTaskFactoryWrapper taskFactory,
+        TargettedTaskSequenceManager targettedTaskSequenceManager) {
+        super(inboxDir, taskFactory, targettedTaskSequenceManager);
     }
 
     public void startBatch(Path batch) {
-        // 1. Get list of deposit directories
-        // 2. Convert to DepositTasks with factory
-        // 3. Sort with sorter
-        // 4.
-
-
+        Path batchDir = inboxDir.resolve(batch);
+        validateBatchDir(batchDir);
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Files.list(batchDir)
+                        .map(taskFactory::createIngestTask)
+                        .sorted()
+                        .collect(Collectors.toList())
+                        .forEach(targettedTaskSequenceManager::scheduleTask);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
+
+    private void validateBatchDir(Path batchDir) {
+        if (Files.isRegularFile(batchDir)) throw new IllegalArgumentException("Batch directory is a regular file: " + batchDir);
+        if (!Files.exists(batchDir)) throw new IllegalArgumentException("Batch directory does not exist: " + batchDir);
+    }
+
+
+    // TODO: implement getStatus (base on list of tasks? on database?)
 }

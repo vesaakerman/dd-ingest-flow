@@ -15,7 +15,6 @@
  */
 package nl.knaw.dans.ingest.core.sequencing;
 
-import nl.knaw.dans.ingest.core.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,19 +34,19 @@ public class TargettedTaskSequenceManager {
         this.executorService = executorService;
     }
 
-    public synchronized void scheduleDeposit(Deposit deposit) {
+    public synchronized void scheduleTask(TargettedTask targettedTask) {
         log.trace("Enqueuing deposit");
         // TODO: Use Is-Version-Of in autoIngest service (DOI is not available there)
-        TargettedTaskSequencer sequencer = sequencers.get(deposit.getTarget());
+        TargettedTaskSequencer sequencer = sequencers.get(targettedTask.getTarget());
         if (sequencer == null) {
-            log.debug("Creating NEW editor for target {}", deposit.getTarget());
-            sequencer = new TargettedTaskSequencer(this, deposit);
-            sequencers.put(deposit.getTarget(), sequencer);
+            log.debug("Creating NEW editor for target {}", targettedTask.getTarget());
+            sequencer = new TargettedTaskSequencer(this, targettedTask);
+            sequencers.put(targettedTask.getTarget(), sequencer);
             executorService.execute(sequencer);
         }
         else {
-            log.debug("Using EXISTING editor for target {}", deposit.getTarget());
-            sequencer.enqueue(deposit);
+            log.debug("Using EXISTING editor for target {}", targettedTask.getTarget());
+            sequencer.enqueue(targettedTask);
         }
     }
 
