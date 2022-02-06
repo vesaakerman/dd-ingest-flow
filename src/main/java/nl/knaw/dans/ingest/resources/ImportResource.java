@@ -15,7 +15,6 @@
  */
 package nl.knaw.dans.ingest.resources;
 
-import nl.knaw.dans.ingest.core.AbstractInbox;
 import nl.knaw.dans.ingest.core.ImportInbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +24,9 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 
 @Path("/import")
@@ -50,11 +47,11 @@ public class ImportResource {
         log.trace("startBatch with path = {}", path);
         try {
             inbox.startBatch(Paths.get(path));
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
         return Response.accepted().build();
     }
-    
 
 }

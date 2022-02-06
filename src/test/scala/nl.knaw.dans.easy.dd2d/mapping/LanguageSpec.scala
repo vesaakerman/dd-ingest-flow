@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.dd2d.mapping
 
 import better.files.File
 import nl.knaw.dans.easy.dd2d.mapping.Language.toCitationBlockLanguage
-import nl.knaw.dans.easy.dd2d.{ Configuration, TestSupportFixture, loadCsvToMap }
+import nl.knaw.dans.easy.dd2d.{ TestSupportFixture, loadCsvToMap }
 
 import java.nio.file.Paths
 
