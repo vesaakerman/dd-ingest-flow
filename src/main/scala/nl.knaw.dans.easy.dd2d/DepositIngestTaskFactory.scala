@@ -63,7 +63,11 @@ class DepositIngestTaskFactory(isMigrated: Boolean = false,
                                supportedLicenses: List[URI],
 
                                reportIdToTerm: Map[String, String],
-                               outboxDir: File) {
+                               var outboxDir: File) {
+
+  def setOutboxDir(outBoxDir: File): Unit = {
+    this.outboxDir = outBoxDir
+  }
 
   def createDepositIngestTask(deposit: Deposit): DepositIngestTask = {
     if (isMigrated)

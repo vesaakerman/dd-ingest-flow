@@ -38,6 +38,7 @@ public class ImportInbox extends AbstractInbox {
     public void startBatch(Path batch) {
         Path batchDir = inboxDir.resolve(batch);
         validateBatchDir(batchDir);
+        taskFactory.setOutbox(initOutbox(batch));
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -49,6 +50,7 @@ public class ImportInbox extends AbstractInbox {
                         .forEach(targettedTaskSequenceManager::scheduleTask);
                 }
                 catch (IOException e) {
+                    // TODO: mark batch as "failed to start"
                     e.printStackTrace();
                 }
             }
@@ -58,6 +60,20 @@ public class ImportInbox extends AbstractInbox {
     private void validateBatchDir(Path batchDir) {
         if (Files.isRegularFile(batchDir)) throw new IllegalArgumentException("Batch directory is a regular file: " + batchDir);
         if (!Files.exists(batchDir)) throw new IllegalArgumentException("Batch directory does not exist: " + batchDir);
+    }
+
+    private Path initOutbox(Path batch) {
+        Path outbox = taskFactory.getOutbox().resolve(batch);
+        try {
+            Files.createDirectories(outbox);
+            Files.createDirectories(outbox.resolve("processed"));
+            Files.createDirectories(outbox.resolve("failed"));
+            Files.createDirectories(outbox.resolve("rejected"));
+        }
+        catch (IOException e) {
+            throw new IllegalArgumentException("Cannot initialize outbox for batch at " + outbox, e);
+        }
+        return outbox;
     }
 
 

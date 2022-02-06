@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
  */
 public class DepositIngestTaskFactoryWrapper {
     private final DepositIngestTaskFactory factory;
+    private final Path outbox;
 
     public DepositIngestTaskFactoryWrapper(
         IngestConfig ingestConfig,
@@ -100,6 +101,7 @@ public class DepositIngestTaskFactoryWrapper {
             reportIdToTerm,
             File.apply(ingestConfig.getOutbox())
         );
+        this.outbox = ingestConfig.getOutbox();
     }
 
     private Map<String, String> getMap(IngestConfig ingestConfig, String mappingCsv, String keyColumn, String valueColumn) {
@@ -117,5 +119,13 @@ public class DepositIngestTaskFactoryWrapper {
 
     public DepositImportTaskWrapper createIngestTask(Path depositDir)  {
         return new DepositImportTaskWrapper(factory.createDepositIngestTask(new Deposit(File.apply(depositDir))));
+    }
+
+    public Path getOutbox() {
+        return outbox;
+    }
+
+    public void setOutbox(Path path) {
+        factory.setOutboxDir(File.apply(path));
     }
 }
