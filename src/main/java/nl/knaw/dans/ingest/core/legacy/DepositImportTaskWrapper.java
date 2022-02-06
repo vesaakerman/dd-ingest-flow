@@ -32,7 +32,9 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
 
     @Override
     public void run() {
+        // Save start time to database
         task.run();
+        // Save end time + result to database
     }
 
     @Override
