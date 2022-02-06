@@ -35,10 +35,10 @@ public class ImportInbox extends AbstractInbox {
         super(inboxDir, taskFactory, targettedTaskSequenceManager);
     }
 
-    public void startBatch(Path batch) {
+    public void importBatch(Path batch, boolean continuePrevious) {
         Path batchDir = inboxDir.resolve(batch);
         validateBatchDir(batchDir);
-        taskFactory.setOutbox(initOutbox(batch));
+        taskFactory.setOutbox(initOutbox(batch, continuePrevious));
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -62,18 +62,30 @@ public class ImportInbox extends AbstractInbox {
         if (!Files.exists(batchDir)) throw new IllegalArgumentException("Batch directory does not exist: " + batchDir);
     }
 
-    private Path initOutbox(Path batch) {
+    private Path initOutbox(Path batch, boolean continuePrevious) {
         Path outbox = taskFactory.getOutbox().resolve(batch);
         try {
+            Path processedDir = outbox.resolve("processed");
+            Path failedDir = outbox.resolve("failed");
+            Path rejectedDir = outbox.resolve("rejected");
+
             Files.createDirectories(outbox);
-            Files.createDirectories(outbox.resolve("processed"));
-            Files.createDirectories(outbox.resolve("failed"));
-            Files.createDirectories(outbox.resolve("rejected"));
+            Files.createDirectories(processedDir);
+            Files.createDirectories(failedDir);
+            Files.createDirectories(rejectedDir);
+
+            if (!continuePrevious && (nonEmpty(processedDir) || nonEmpty(failedDir) || nonEmpty(rejectedDir))) {
+                throw new IllegalArgumentException("outbox is not empty; start with empty outbox at " + outbox + ", or use the 'continue' option");
+            }
         }
         catch (IOException e) {
-            throw new IllegalArgumentException("Cannot initialize outbox for batch at " + outbox, e);
+            throw new IllegalArgumentException("cannot initialize outbox for batch at " + outbox, e);
         }
         return outbox;
+    }
+
+    private boolean nonEmpty(Path p) throws IOException {
+        return Files.list(p).findAny().isPresent();
     }
 
 

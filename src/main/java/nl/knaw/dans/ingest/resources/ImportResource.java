@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.ingest.resources;
 
+import nl.knaw.dans.ingest.api.Import;
+import nl.knaw.dans.ingest.api.ResponseMessage;
 import nl.knaw.dans.ingest.core.ImportInbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +28,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.nio.file.Paths;
 
 @Path("/import")
 @Produces(MediaType.APPLICATION_JSON)
@@ -41,17 +41,18 @@ public class ImportResource {
     }
 
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response startBatch(String path) throws IOException {
-        log.trace("startBatch with path = {}", path);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startBatch(Import start) {
+        log.trace("Received command = {}", start);
         try {
-            inbox.startBatch(Paths.get(path));
+            inbox.importBatch(start.getBatch(), start.isContinue());
         }
         catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
-        return Response.accepted().build();
+        return Response.accepted(
+                new ResponseMessage(Response.Status.ACCEPTED.getStatusCode(), "import request was received; check progress with the 'status' command"))
+            .build();
     }
 
 }
