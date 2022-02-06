@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.ingest.core;
+package nl.knaw.dans.ingest.core.sequencing;
 
-import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+public interface TargettedTask extends Runnable {
 
-import java.nio.file.Path;
-
-public class ImportInbox extends AbstractInbox {
-
-    public ImportInbox(Path inboxDir, Path outboxDir, TargettedTaskSequenceManager targettedTaskSequenceManager) {
-        super(inboxDir, outboxDir, targettedTaskSequenceManager);
-    }
-
-    public void startBatch(Path batch) {
-        // 1. Get list of deposit directories
-        // 2. Convert to DepositTasks with factory
-        // 3. Sort with sorter
-        // 4.
-
-
-    }
+    String getTarget();
 }

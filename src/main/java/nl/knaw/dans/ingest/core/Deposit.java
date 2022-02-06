@@ -15,13 +15,14 @@
  */
 package nl.knaw.dans.ingest.core;
 
+import nl.knaw.dans.ingest.core.sequencing.TargettedTask;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class Deposit {
+public class Deposit implements TargettedTask {
     private final int delay;
     private final String doi;
     private final String filename;
@@ -34,12 +35,22 @@ public class Deposit {
         doi = configuration.getString("doi");
     }
 
-    public String getDoi() {
+    public String getTarget() {
         return doi;
     }
 
     public int getDelay() {
         return delay;
+    }
+
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(delay);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

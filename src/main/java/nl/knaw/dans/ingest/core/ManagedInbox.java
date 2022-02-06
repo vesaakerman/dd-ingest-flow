@@ -16,7 +16,7 @@
 package nl.knaw.dans.ingest.core;
 
 import io.dropwizard.lifecycle.Managed;
-import nl.knaw.dans.ingest.core.sequencing.DepositSequenceManager;
+import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 public class ManagedInbox extends AbstractInbox implements Managed {
     private static final Logger log = LoggerFactory.getLogger(ManagedInbox.class);
 
-    public ManagedInbox(Path inboxDir, Path outboxDir, DepositSequenceManager depositSequenceManager) {
-        super(inboxDir, outboxDir, depositSequenceManager);
+    public ManagedInbox(Path inboxDir, Path outboxDir, TargettedTaskSequenceManager targettedTaskSequenceManager) {
+        super(inboxDir, outboxDir, targettedTaskSequenceManager);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ManagedInbox extends AbstractInbox implements Managed {
         List<Path> files = Files.list(inboxDir).filter(Files::isRegularFile).sorted().collect(Collectors.toList());
         log.debug("Found files: {}", files);
         for (Path f : files) {
-            depositSequenceManager.scheduleDeposit(new Deposit(f));
+            targettedTaskSequenceManager.scheduleDeposit(new Deposit(f));
         }
     }
 

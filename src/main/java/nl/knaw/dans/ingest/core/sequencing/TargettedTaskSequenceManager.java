@@ -26,34 +26,34 @@ import java.util.concurrent.ExecutorService;
  * Manages the process of ingesting deposits in the correct order by ensuring that deposits that target the same dataset are not concurrently scheduled on different threads. If an unfinished deposit
  * for the same dataset is still present, the next deposit for that dataset will be queued on the same thread, ensuring that it cannot overtake the already processing deposit.
  */
-public class DepositSequenceManager {
-    private static final Logger log = LoggerFactory.getLogger(DepositSequenceManager.class);
-    private final LinkedHashMap<String, DepositSequencer> editors = new LinkedHashMap<>();
+public class TargettedTaskSequenceManager {
+    private static final Logger log = LoggerFactory.getLogger(TargettedTaskSequenceManager.class);
+    private final LinkedHashMap<String, TargettedTaskSequencer> sequencers = new LinkedHashMap<>();
     private final ExecutorService executorService;
 
-    public DepositSequenceManager(ExecutorService executorService) {
+    public TargettedTaskSequenceManager(ExecutorService executorService) {
         this.executorService = executorService;
     }
 
     public synchronized void scheduleDeposit(Deposit deposit) {
         log.trace("Enqueuing deposit");
         // TODO: Use Is-Version-Of in autoIngest service (DOI is not available there)
-        DepositSequencer sequencer = editors.get(deposit.getDoi());
+        TargettedTaskSequencer sequencer = sequencers.get(deposit.getTarget());
         if (sequencer == null) {
-            log.debug("Creating NEW editor for DOI {}", deposit.getDoi());
-            sequencer = new DepositSequencer(this, deposit);
-            editors.put(deposit.getDoi(), sequencer);
+            log.debug("Creating NEW editor for target {}", deposit.getTarget());
+            sequencer = new TargettedTaskSequencer(this, deposit);
+            sequencers.put(deposit.getTarget(), sequencer);
             executorService.execute(sequencer);
         }
         else {
-            log.debug("Using EXISTING editor for DOI {}", deposit.getDoi());
+            log.debug("Using EXISTING editor for target {}", deposit.getTarget());
             sequencer.enqueue(deposit);
         }
     }
 
-    synchronized void removeSequencer(DepositSequencer sequencer) {
-        log.trace("Removing editor for DOI {}", sequencer.getTargetDoi());
-        editors.remove(sequencer.getTargetDoi());
+    synchronized void removeSequencer(TargettedTaskSequencer sequencer) {
+        log.trace("Removing editor for target {}", sequencer.getTarget());
+        sequencers.remove(sequencer.getTarget());
     }
 
 }
