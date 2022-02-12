@@ -15,8 +15,14 @@
  */
 package nl.knaw.dans.ingest.core.legacy;
 
+import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Metadata;
 import nl.knaw.dans.easy.dd2d.DepositIngestTask;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTask;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 public class DepositImportTaskWrapper implements TargettedTask, Comparable<DepositImportTaskWrapper> {
     private final DepositIngestTask task;
@@ -39,9 +45,29 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
 
     @Override
     public int compareTo(DepositImportTaskWrapper o) {
-        // TODO: make more robust
-        String created = task.deposit().tryBag().get().getMetadata().get("Created").get(0);
-        return created.compareTo(o.task.deposit().tryBag().get().getMetadata().get("Created").get(0));
+        return getCreatedInstant(task).compareTo(getCreatedInstant(o.task));
+    }
+
+    private static Instant getCreatedInstant(DepositIngestTask t) {
+        Bag bag = null;
+        try {
+            bag = t.deposit().tryBag().get();
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("Unable to find bag; task = " + t, e);
+        }
+        Metadata metadata = bag.getMetadata();
+        if (metadata == null) {
+            throw new IllegalArgumentException("bag-info.txt not found in bag; task = " +  t);
+        }
+        List<String> createdValues = metadata.get("Created");
+        if (createdValues == null) {
+            throw new IllegalArgumentException("No Created value found in bag; task = " + t);
+        }
+        if (createdValues.size() != 1) {
+            throw new IllegalArgumentException("There should be exactly one Created value; found " + createdValues.size() + "; task = " + t);
+        }
+        return OffsetDateTime.parse(createdValues.get(0)).toInstant();
     }
 
     @Override

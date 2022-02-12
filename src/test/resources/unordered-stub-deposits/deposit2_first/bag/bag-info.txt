@@ -1,5 +1,5 @@
 EASY-User-Account: user001
 Created: 2020-11-17T09:26:06.418+01:00
-Payload-Oxum: 20.2
-Bagging-Date: 2020-11-17
-Bag-Size: 0 KB
+Payload-Oxum: 0.1
+Bagging-Date: 2022-02-12
+Bag-Size: 0.1 KB

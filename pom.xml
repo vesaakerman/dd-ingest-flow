@@ -57,11 +57,14 @@
             <artifactId>dans-dataverse-scala-lib_2.12</artifactId>
             <version>4.4.0</version>
         </dependency>
+
         <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-forms</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
         </dependency>
 
+        <!-- Legacy -->
         <!-- testing -->
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -143,12 +146,6 @@
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-ext_2.12</artifactId>
-        </dependency>
-
-        <!-- Dates -->
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
         </dependency>
 
         <!-- BagIt -->
