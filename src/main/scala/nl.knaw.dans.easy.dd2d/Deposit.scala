@@ -121,6 +121,10 @@ case class Deposit(dir: File) extends DebugEnhancedLogging {
     case t: Throwable => Failure(new IllegalArgumentException(s"Unparseable XML: ${ t.getMessage }"))
   }
 
+  def depositId: String = {
+    dir.name
+  }
+
   def doi: String = {
     depositProperties.getString("identifier.doi", "")
   }

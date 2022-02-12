@@ -17,16 +17,19 @@
 package nl.knaw.dans.ingest;
 
 import io.dropwizard.Application;
+import io.dropwizard.db.PooledDataSourceFactory;
+import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.dans.ingest.core.ImportInbox;
-import nl.knaw.dans.ingest.core.config.DataverseConfigScala;
+import nl.knaw.dans.ingest.core.TaskEvent;
 import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.ingest.core.service.TaskEventService;
+import nl.knaw.dans.ingest.core.service.TaskEventServiceImpl;
+import nl.knaw.dans.ingest.db.TaskEventDAO;
 import nl.knaw.dans.ingest.resources.ImportResource;
-import nl.knaw.dans.lib.dataverse.DataverseInstance;
-import nl.knaw.dans.lib.dataverse.DataverseInstanceConfig;
-import scala.Option;
 
 import java.util.concurrent.ExecutorService;
 
@@ -36,6 +39,14 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
         new DdIngestFlowApplication().run(args);
     }
 
+    private final HibernateBundle<DdIngestFlowConfiguration> hibernateBundle = new HibernateBundle<DdIngestFlowConfiguration>(TaskEvent.class) {
+
+        @Override
+        public PooledDataSourceFactory getDataSourceFactory(DdIngestFlowConfiguration configuration) {
+            return configuration.getTaskEventDatabase();
+        }
+    };
+
     @Override
     public String getName() {
         return "DD Ingest Flow";
@@ -43,6 +54,7 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
 
     @Override
     public void initialize(final Bootstrap<DdIngestFlowConfiguration> bootstrap) {
+        bootstrap.addBundle(hibernateBundle);
     }
 
     @Override
@@ -54,8 +66,9 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
             configuration.getDataverse(),
             configuration.getManagePrestaging(),
             configuration.getValidateDansBag());
-        final ImportInbox inbox = new ImportInbox(configuration.getImportConf().getInbox(), importTaskFactoryWrapper, targettedTaskSequenceManager);
+        final TaskEventDAO taskEventDAO = new TaskEventDAO(hibernateBundle.getSessionFactory());
+        final TaskEventService taskEventService = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(TaskEventServiceImpl.class, TaskEventDAO.class, taskEventDAO);
+        final ImportInbox inbox = new ImportInbox(configuration.getImportConf().getInbox(), importTaskFactoryWrapper, targettedTaskSequenceManager, taskEventService);
         environment.jersey().register(new ImportResource(inbox));
     }
-
 }

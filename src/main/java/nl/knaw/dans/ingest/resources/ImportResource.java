@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.ingest.resources;
 
+import io.dropwizard.hibernate.UnitOfWork;
 import nl.knaw.dans.ingest.api.Import;
 import nl.knaw.dans.ingest.api.ResponseMessage;
 import nl.knaw.dans.ingest.core.ImportInbox;

@@ -22,9 +22,11 @@ import nl.knaw.dans.easy.dd2d.ZipFileHandler;
 import nl.knaw.dans.easy.dd2d.dansbag.DansBagValidator;
 import nl.knaw.dans.easy.dd2d.migrationinfo.MigrationInfo;
 import nl.knaw.dans.easy.dd2d.migrationinfo.MigrationInfoConfig;
+import nl.knaw.dans.ingest.core.TaskEvent;
 import nl.knaw.dans.ingest.core.config.DataverseConfigScala;
 import nl.knaw.dans.ingest.core.config.HttpServiceConfig;
 import nl.knaw.dans.ingest.core.config.IngestConfig;
+import nl.knaw.dans.ingest.core.service.TaskEventService;
 import nl.knaw.dans.lib.dataverse.DataverseInstance;
 import nl.knaw.dans.lib.dataverse.DataverseInstanceConfig;
 import scala.Option;
@@ -117,8 +119,8 @@ public class DepositIngestTaskFactoryWrapper {
             .get();
     }
 
-    public DepositImportTaskWrapper createIngestTask(Path depositDir)  {
-        return new DepositImportTaskWrapper(factory.createDepositIngestTask(new Deposit(File.apply(depositDir))));
+    public DepositImportTaskWrapper createIngestTask(Path depositDir, TaskEventService taskEventService)  {
+        return new DepositImportTaskWrapper(factory.createDepositIngestTask(new Deposit(File.apply(depositDir))), taskEventService);
     }
 
     public Path getOutbox() {

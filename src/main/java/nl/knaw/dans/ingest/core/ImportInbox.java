@@ -15,10 +15,13 @@
  */
 package nl.knaw.dans.ingest.core;
 
+import nl.knaw.dans.ingest.core.legacy.DepositImportTaskWrapper;
 import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.ingest.core.service.TaskEventService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,40 +29,59 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-// TODO: use Managed to cleanly interrupt when stopping service?
-public class ImportInbox extends AbstractInbox {
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+public class ImportInbox {
+    private static final Logger log = LoggerFactory.getLogger(ImportInbox.class);
+    private final Path inboxDir;
+    private final DepositIngestTaskFactoryWrapper taskFactory;
+    private final TargettedTaskSequenceManager targettedTaskSequenceManager;
+    private final TaskEventService taskEventService;
+    private final ExecutorService enqueingExecutor = Executors.newSingleThreadExecutor();
 
     public ImportInbox(Path inboxDir, DepositIngestTaskFactoryWrapper taskFactory,
-        TargettedTaskSequenceManager targettedTaskSequenceManager) {
-        super(inboxDir, taskFactory, targettedTaskSequenceManager);
+        TargettedTaskSequenceManager targettedTaskSequenceManager, TaskEventService taskEventService) {
+        this.inboxDir = inboxDir;
+        this.taskFactory = taskFactory;
+        this.targettedTaskSequenceManager = targettedTaskSequenceManager;
+        this.taskEventService = taskEventService;
     }
 
     public void importBatch(Path batch, boolean continuePrevious) {
         Path batchDir = inboxDir.resolve(batch);
         validateBatchDir(batchDir);
         taskFactory.setOutbox(initOutbox(batch, continuePrevious));
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Files.list(batchDir)
-                        .map(taskFactory::createIngestTask)
-                        .sorted()
-                        .collect(Collectors.toList())
-                        .forEach(targettedTaskSequenceManager::scheduleTask);
-                }
-                catch (IOException e) {
-                    // TODO: mark batch as "failed to start"
-                    e.printStackTrace();
-                }
+        // Enqueuing can take a while; in order to return to the caller as soon as possible we dispatch this to dedicated thread
+        enqueingExecutor.execute(() -> {
+            try {
+                Files.list(batchDir)
+                    .map(d -> taskFactory.createIngestTask(d, taskEventService))
+                    .sorted()
+                    .collect(Collectors.toList())
+                    .forEach(this::enqueue);
+            }
+            catch (IOException e) {
+                // TODO: mark batch as "failed to start"
+                e.printStackTrace();
             }
         });
     }
 
+    private void enqueue(DepositImportTaskWrapper w) {
+        log.trace("Enqueuing {}", w);
+        try {
+            targettedTaskSequenceManager.scheduleTask(w);
+            taskEventService.writeEvent(w.getDepositId(), TaskEvent.EventType.ENQUEUE, TaskEvent.Result.OK, null);
+        }
+        catch (Exception e) {
+            log.error("Enqueing of {} failed", w, e);
+            taskEventService.writeEvent(w.getDepositId(), TaskEvent.EventType.ENQUEUE, TaskEvent.Result.FAILED, e.getMessage());
+        }
+    }
+
     private void validateBatchDir(Path batchDir) {
-        if (Files.isRegularFile(batchDir)) throw new IllegalArgumentException("Batch directory is a regular file: " + batchDir);
-        if (!Files.exists(batchDir)) throw new IllegalArgumentException("Batch directory does not exist: " + batchDir);
+        if (Files.isRegularFile(batchDir))
+            throw new IllegalArgumentException("Batch directory is a regular file: " + batchDir);
+        if (!Files.exists(batchDir))
+            throw new IllegalArgumentException("Batch directory does not exist: " + batchDir);
     }
 
     private Path initOutbox(Path batch, boolean continuePrevious) {
@@ -87,7 +109,6 @@ public class ImportInbox extends AbstractInbox {
     private boolean nonEmpty(Path p) throws IOException {
         return Files.list(p).findAny().isPresent();
     }
-
 
     // TODO: implement getStatus (base on list of tasks? on database?)
 }

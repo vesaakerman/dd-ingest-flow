@@ -49,26 +49,20 @@ package object dd2d {
 
   case class FileInfo(file: File, checksum: String, metadata: FileMeta)
 
-  case class RejectedDepositException(deposit: Deposit, msg: String, cause: Throwable = null)
-    extends Exception(s"Rejected ${ deposit.dir }: $msg", cause)
-
-  case class FailedDepositException(deposit: Deposit, msg: String, cause: Throwable = null)
-    extends Exception(s"Failed ${ deposit.dir }: $msg", cause)
-
   case class CannotUpdateDraftDatasetException(deposit: Deposit)
-    extends Exception("Latest version must be published before update-deposit can be processed")
+    extends RuntimeException("Latest version must be published before update-deposit can be processed")
 
   case class InvalidDepositException(deposit: Deposit, msg: String, cause: Throwable = null)
-    extends Exception(s"Not a deposit: $msg", cause)
+    extends RuntimeException(s"Not a deposit: $msg", cause)
 
   case class MissingRequiredFieldException(fieldName: String)
-    extends Exception(s"No value found for required field: $fieldName")
+    extends RuntimeException(s"No value found for required field: $fieldName")
 
   case class ExistingResultsInOutboxException(outboxDir: File)
-    extends Exception(s"Output directory: $outboxDir already contains results")
+    extends RuntimeException(s"Output directory: $outboxDir already contains results")
 
   case class OutboxDirIsRegularFileException(outboxDir: File)
-    extends Exception(s"Output directory: $outboxDir is a regular file.")
+    extends RuntimeException(s"Output directory: $outboxDir is a regular file.")
 
   object OutboxSubdir extends Enumeration {
     type OutboxSubdir = Value

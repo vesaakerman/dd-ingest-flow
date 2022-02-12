@@ -107,6 +107,6 @@ public class DepositImportTaskWrapperTest {
             null,
             null,
             null
-        ));
+        ), null);
     }
 }
