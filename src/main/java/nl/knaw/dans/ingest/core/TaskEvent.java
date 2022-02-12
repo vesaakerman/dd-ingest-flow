@@ -46,23 +46,23 @@ public class TaskEvent {
     @Column(name = "timestamp", nullable = false)
     private OffsetDateTime timestamp;
 
-    @Column(name = "deposit_id", nullable = false)
-    private UUID depositId;
+    @Column(name = "deposit_id", nullable = false, length = 36)
+    private String depositId;
 
-    @Column(name = "event_type", nullable = false)
-    private EventType evenType;
+    @Column(name = "event_type", nullable = false, length = 20)
+    private String evenType;
 
-    @Column(name = "result", nullable = false)
-    private Result result;
+    @Column(name = "result", nullable = false, length = 20)
+    private String result;
 
     @Column(name = "message")
     private String message;
 
     public TaskEvent(OffsetDateTime timestamp, UUID depositId, EventType evenType, Result result, String message) {
         this.timestamp = timestamp;
-        this.depositId = depositId;
-        this.evenType = evenType;
-        this.result = result;
+        this.depositId = depositId.toString();
+        this.evenType = evenType.name();
+        this.result = result.name();
         this.message = message;
     }
 
@@ -83,27 +83,27 @@ public class TaskEvent {
     }
 
     public UUID getDepositId() {
-        return depositId;
+        return UUID.fromString(depositId);
     }
 
     public void setDepositId(UUID depositId) {
-        this.depositId = depositId;
+        this.depositId = depositId.toString();
     }
 
     public EventType getEvenType() {
-        return evenType;
+        return EventType.valueOf(evenType);
     }
 
     public void setEvenType(EventType evenType) {
-        this.evenType = evenType;
+        this.evenType = evenType.name();
     }
 
     public Result getResult() {
-        return result;
+        return Result.valueOf(result);
     }
 
     public void setResult(Result result) {
-        this.result = result;
+        this.result = result.name();
     }
 
     public String getMessage() {
