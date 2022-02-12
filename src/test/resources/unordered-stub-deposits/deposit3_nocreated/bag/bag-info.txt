@@ -1,5 +1,4 @@
 EASY-User-Account: user001
-Created: 2020-11-17T09:26:06.418+01:00
 Payload-Oxum: 0.1
 Is-Version-Of: deposit3_first
 Bagging-Date: 2022-02-12

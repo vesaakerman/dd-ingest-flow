@@ -26,9 +26,11 @@ import java.util.List;
 
 public class DepositImportTaskWrapper implements TargettedTask, Comparable<DepositImportTaskWrapper> {
     private final DepositIngestTask task;
+    private final Instant created;
 
     public DepositImportTaskWrapper(DepositIngestTask task) {
         this.task = task;
+        this.created = getCreatedInstant(task);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
 
     @Override
     public int compareTo(DepositImportTaskWrapper o) {
-        return getCreatedInstant(task).compareTo(getCreatedInstant(o.task));
+        return created.compareTo(o.created);
     }
 
     private static Instant getCreatedInstant(DepositIngestTask t) {
