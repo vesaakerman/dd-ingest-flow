@@ -31,18 +31,22 @@ public class BatchImpl implements Batch {
     private static final Logger log = LoggerFactory.getLogger(BatchImpl.class);
 
     private final String name;
-    private final Path dir;
+    private final Path inDir;
+    private final Path outDir;
     private final EventWriter eventWriter;
     private final DepositIngestTaskFactoryWrapper taskFactory;
 
     private boolean getTasksCalled = false;
     private boolean getTasksFailed = false;
 
-    public BatchImpl(String name, Path dir, TaskEventService taskEventService, DepositIngestTaskFactoryWrapper taskFactory) {
+    public BatchImpl(String name, Path inDir, Path outDir, TaskEventService taskEventService, DepositIngestTaskFactoryWrapper taskFactory) {
         this.name = name;
-        if (!dir.isAbsolute())
-            throw new IllegalArgumentException("dir must be an absolute path");
-        this.dir = dir;
+        if (!inDir.isAbsolute())
+            throw new IllegalArgumentException("inDir must be an absolute path");
+        this.inDir = inDir;
+        if (!outDir.isAbsolute())
+            throw new IllegalArgumentException("outDir must be an absolute path");
+        this.outDir = outDir;
         this.eventWriter = new EventWriter(taskEventService, name);
         this.taskFactory = taskFactory;
     }
@@ -57,8 +61,8 @@ public class BatchImpl implements Batch {
         if (getTasksCalled)
             throw new IllegalStateException("getTasks should be called only once per batch");
         try {
-            return Files.list(dir)
-                .map(d -> taskFactory.createIngestTask(d, eventWriter))
+            return Files.list(inDir)
+                .map(d -> taskFactory.createIngestTask(d, outDir, eventWriter))
                 .sorted()
                 .collect(Collectors.toList());
         }

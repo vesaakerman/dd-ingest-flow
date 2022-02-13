@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
  */
 public class DepositIngestTaskFactoryWrapper {
     private final DepositIngestTaskFactory factory;
-    private final Path outbox;
 
     public DepositIngestTaskFactoryWrapper(
         IngestConfig ingestConfig,
@@ -98,10 +97,7 @@ public class DepositIngestTaskFactoryWrapper {
             iso2ToDataverseLanguage,
             variantToLicense,
             supportedLicenses,
-            reportIdToTerm,
-            File.apply(ingestConfig.getOutbox())
-        );
-        this.outbox = ingestConfig.getOutbox();
+            reportIdToTerm);
     }
 
     private Map<String, String> getMap(IngestConfig ingestConfig, String mappingCsv, String keyColumn, String valueColumn) {
@@ -117,15 +113,8 @@ public class DepositIngestTaskFactoryWrapper {
             .get();
     }
 
-    public DepositImportTaskWrapper createIngestTask(Path depositDir, EventWriter eventWriter) {
-        return new DepositImportTaskWrapper(factory.createDepositIngestTask(new Deposit(File.apply(depositDir))), eventWriter);
+    public DepositImportTaskWrapper createIngestTask(Path depositDir, Path outboxDir, EventWriter eventWriter) {
+        return new DepositImportTaskWrapper(factory.createDepositIngestTask(new Deposit(File.apply(depositDir)), File.apply(outboxDir)), eventWriter);
     }
 
-    public Path getOutbox() {
-        return outbox;
-    }
-
-    public void setOutbox(Path path) {
-        factory.setOutboxDir(File.apply(path));
-    }
 }

@@ -72,7 +72,12 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
         final TaskEventService taskEventService = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(TaskEventServiceImpl.class, TaskEventDAO.class, taskEventDAO);
         final EnqueuingService enqueuingService = new EnqueuingServiceImpl(targettedTaskSequenceManager);
 
-        final ImportInbox inbox = new ImportInbox(configuration.getImportConf().getInbox(), importTaskFactoryWrapper, taskEventService, enqueuingService);
+        final ImportInbox inbox = new ImportInbox(
+            configuration.getImportConf().getInbox(),
+            configuration.getImportConf().getOutbox(),
+            importTaskFactoryWrapper,
+            taskEventService,
+            enqueuingService);
         environment.jersey().register(new ImportResource(inbox));
     }
 }

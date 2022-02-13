@@ -42,7 +42,6 @@ import scala.xml.{ Elem, XML }
  * @param narcisClassification                         root element of the NARCIS SKOS file
  * @param iso2ToDataverseLanguage                      mapping of ISO639-2 to Dataverse language term
  * @param reportIdToTerm                               mapping of ABR report ID to term
- * @param outboxDir                                    outbox
  */
 class DepositIngestTaskFactory(isMigrated: Boolean = false,
                                optFileExclusionPattern: Option[Pattern],
@@ -62,14 +61,9 @@ class DepositIngestTaskFactory(isMigrated: Boolean = false,
                                variantToLicense: Map[String, String],
                                supportedLicenses: List[URI],
 
-                               reportIdToTerm: Map[String, String],
-                               var outboxDir: File) {
+                               reportIdToTerm: Map[String, String]) {
 
-  def setOutboxDir(outBoxDir: File): Unit = {
-    this.outboxDir = outBoxDir
-  }
-
-  def createDepositIngestTask(deposit: Deposit): DepositIngestTask = {
+  def createDepositIngestTask(deposit: Deposit, outboxDir: File): DepositIngestTask = {
     if (isMigrated)
       new DepositMigrationTask(deposit,
         optFileExclusionPattern,
@@ -88,7 +82,7 @@ class DepositIngestTaskFactory(isMigrated: Boolean = false,
         variantToLicense,
         supportedLicenses,
         reportIdToTerm,
-        outboxDir: File)
+        outboxDir)
     else
       DepositIngestTask(
         deposit,

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import argparse
+import argparse, requests, os
 
-import requests
+
 
 parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('batch',
@@ -14,7 +14,7 @@ parser.add_argument('-c', '--continue',
 args = parser.parse_args()
 
 r = requests.post('http://localhost:20000/import', json={
-    'batch': args.batch,
+    'batch': os.path.abspath(args.batch),
     'continue': args.continue_previous
 })
 

@@ -26,31 +26,43 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ImportInbox {
     private static final Logger log = LoggerFactory.getLogger(ImportInbox.class);
     private final Path inboxDir;
+    private final Path outboxDir;
     private final DepositIngestTaskFactoryWrapper taskFactory;
     private final TaskEventService taskEventService;
     private final EnqueuingService enqueuingService;
 
-    public ImportInbox(Path inboxDir, DepositIngestTaskFactoryWrapper taskFactory, TaskEventService taskEventService, EnqueuingService enqueuingService) {
-        this.inboxDir = inboxDir;
+    public ImportInbox(Path inboxDir, Path outboxDir, DepositIngestTaskFactoryWrapper taskFactory, TaskEventService taskEventService, EnqueuingService enqueuingService) {
+        this.inboxDir = inboxDir.toAbsolutePath();
+        this.outboxDir = outboxDir.toAbsolutePath();
         this.taskFactory = taskFactory;
         this.taskEventService = taskEventService;
         this.enqueuingService = enqueuingService;
     }
 
     public void importBatch(Path batchPath, boolean continuePrevious) {
-        Path batchDir = inboxDir.resolve(batchPath);
-        validateBatchDir(batchDir);
-        taskFactory.setOutbox(initOutbox(batchDir, continuePrevious));
+        Path relativeBatchDir;
+        if (batchPath.isAbsolute()) {
+            relativeBatchDir = inboxDir.relativize(batchPath);
+            if (relativeBatchDir.startsWith(Paths.get(".."))) {
+                throw new IllegalArgumentException("Batch directory must be subdirectory of" + inboxDir
+                    + ". Provide correct absolute path or a path relative to this directory");
+            }
+        }
+        else {
+            relativeBatchDir = batchPath;
+        }
+        Path inDir = inboxDir.resolve(relativeBatchDir);
+        Path outDir = outboxDir.resolve(relativeBatchDir);
 
-        // TODO: batchPath is absolute, validate that is in the inboxDir and then relativize it
-        Batch batch = new BatchImpl(batchPath.toString(), batchDir, taskEventService, taskFactory);
-
+        validateBatchDir(inDir);
+        initOutbox(outDir, continuePrevious);
+        Batch batch = new BatchImpl(relativeBatchDir.toString(), inDir, outDir, taskEventService, taskFactory);
         enqueuingService.executeEnqueue(batch);
-
     }
 
     private void validateBatchDir(Path batchDir) {
@@ -60,8 +72,7 @@ public class ImportInbox {
             throw new IllegalArgumentException("Batch directory does not exist: " + batchDir);
     }
 
-    private Path initOutbox(Path batch, boolean continuePrevious) {
-        Path outbox = taskFactory.getOutbox().resolve(batch);
+    private void initOutbox(Path outbox, boolean continuePrevious) {
         try {
             Path processedDir = outbox.resolve("processed");
             Path failedDir = outbox.resolve("failed");
@@ -79,7 +90,6 @@ public class ImportInbox {
         catch (IOException e) {
             throw new IllegalArgumentException("cannot initialize outbox for batch at " + outbox, e);
         }
-        return outbox;
     }
 
     private boolean nonEmpty(Path p) throws IOException {
