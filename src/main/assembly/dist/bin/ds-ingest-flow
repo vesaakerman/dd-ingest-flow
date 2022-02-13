@@ -2,8 +2,6 @@
 
 import argparse, requests, os
 
-
-
 parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('batch',
                     help='batch of deposits to import')
