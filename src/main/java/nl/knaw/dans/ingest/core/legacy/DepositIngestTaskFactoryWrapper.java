@@ -80,7 +80,7 @@ public class DepositIngestTaskFactoryWrapper {
         final List<URI> supportedLicenses = getUriList(ingestFlowConfig, "supported-licenses.txt");
 
         factory = new DepositIngestTaskFactory(
-            true,
+            true, // TODO: make configurable
             Option.apply(Pattern.compile(ingestFlowConfig.getFileExclusionPattern())),
             new ZipFileHandler(File.apply(ingestFlowConfig.getZipWrappingTempDir())),
             ingestFlowConfig.getDepositorRole(),

@@ -13,12 +13,12 @@ server:
 
 ingestFlow:
   import:
-    inputArea: data/migration/deposits
-    outputAread: data/migration/out
+    inbox: /var/opt/dans.knaw.nl/tmp/migration/deposits
+    outbox: /var/opt/dans.knaw.nl/tmp/migration/out
 
   autoIngest:
-    inbox: data/autoingest/in
-    outbox: data/autoingest/out
+    inbox: /var/opt/dans.knaw.nl/tmp/auto-ingest/in
+    outbox: /var/opt/dans.knaw.nl/tmp/auto-ingest/out
 
   #
   # Filtering. Files with a path matching the pattern will not be added to the dataset. Renaming/moving files is not affected.
@@ -27,10 +27,10 @@ ingestFlow:
   #
   # The role that the depositor account will be assigned on its datasets.
   #
-  depositorRole: contributor
+  depositorRole: contributorplus
   deduplicate: true
-  zipWrappingTempDir: data/tmp
-  mappingDefsDir: src/main/assembly/dist/cfg
+  zipWrappingTempDir: /var/opt/dans.knaw.nl/tmp/zip-wrapping
+  mappingDefsDir: /etc/opt/dans.knaw.nl/dd-ingest-flow
   taskQueue:
     nameFormat: "ingest-worker-%d"
     maxQueueSize: 5000
@@ -59,13 +59,13 @@ dataverse:
     awaitUnlockWaitTimeMs: 500
 
 taskEventDatabase:
-  driverClass: org.hsqldb.jdbcDriver
-  url: jdbc:hsqldb:hsql://localhost:9001/dd-ingest-flow
+  driverClass: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5432/dd_ingest_flow
+  user: changeme
+  password: changeme
   logValidationErrors: true
-  # See: https://stackoverflow.com/questions/10684244/dbcp-validationquery-for-different-databases
-  validationQuery: SELECT * FROM INFORMATION_SCHEMA.SYSTEM_TABLES
   properties:
-    hibernate.dialect: 'org.hibernate.dialect.HSQLDialect'
+    hibernate.dialect: 'org.hibernate.dialect.PostgreSQL95Dialect'
     hibernate.hbm2ddl.auto: update
 
 validateDansBag:
@@ -74,7 +74,7 @@ validateDansBag:
   readTimeoutMs: 30000
 
 managePrestaging:
-  baseUrl: 'http://dar.dans.knaw.nl:8080'
+  baseUrl: 'http://localhost:8080'
   connectionTimeoutMs: 10000
   readTimeoutMs: 30000
 

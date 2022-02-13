@@ -1,24 +1,94 @@
+#
+# Http-interfaces
+#
 server:
   applicationContextPath: /
   adminContextPath: /
   applicationConnectors:
     - type: http
-      # Replace with port number unique for this service
-      port: 20000
+      port: 20300
   adminConnectors:
     - type: http
-      # Replace with port number unique for this service
-      port: 20001
+      port: 20301
+
+ingestFlow:
+  import:
+    inbox: data/migration/deposits
+    outbox: data/migration/out
+
+  autoIngest:
+    inbox: data/autoingest/in
+    outbox: data/autoingest/out
+
+  #
+  # Filtering. Files with a path matching the pattern will not be added to the dataset. Renaming/moving files is not affected.
+  #
+  fileExclusionPattern: ^$
+  #
+  # The role that the depositor account will be assigned on its datasets.
+  #
+  depositorRole: contributor
+  deduplicate: true
+  zipWrappingTempDir: data/tmp
+  mappingDefsDir: src/main/assembly/dist/cfg
+  taskQueue:
+    nameFormat: "ingest-worker-%d"
+    maxQueueSize: 5000
+    # Number of threads will be increased when maxQueueSize is exceeded.
+    minThreads: 2
+    # No more than maxThreads will be created though
+    maxThreads: 5
+    # Threads will die after 60 seconds of idleness
+    keepAliveTime: 60 seconds
+
+#
+# Parameters related to communication with the Dataverse instance
+#
+dataverse:
+  http:
+    baseUrl: 'http://dar.dans.knaw.nl:8080'
+    connectionTimeoutMs: 10000
+    readTimeoutMs: 30000
+  api:
+    apiVersion: 1
+    apiKey: '93969514-87af-4b75-9817-a4b60c3a79bf'
+    unblockKey: 's3kretKey'
+    publishAwaitUnlockMaxRetries: 900
+    publishAwaitUnlockWaitTimeMs: 3000
+    awaitUnlockMaxRetries: 30
+    awaitUnlockWaitTimeMs: 500
+
+taskEventDatabase:
+  driverClass: org.hsqldb.jdbcDriver
+  url: jdbc:hsqldb:hsql://localhost:9001/dd-ingest-flow
+  logValidationErrors: true
+  # See: https://stackoverflow.com/questions/10684244/dbcp-validationquery-for-different-databases
+  validationQuery: SELECT * FROM INFORMATION_SCHEMA.SYSTEM_TABLES
+  properties:
+    hibernate.dialect: 'org.hibernate.dialect.HSQLDialect'
+    hibernate.hbm2ddl.auto: update
+
+validateDansBag:
+  baseUrl: 'http://localhost:20180'
+  connectionTimeoutMs: 10000
+  readTimeoutMs: 30000
+
+managePrestaging:
+  baseUrl: 'http://dar.dans.knaw.nl:8080'
+  connectionTimeoutMs: 10000
+  readTimeoutMs: 30000
 
 #
 # See https://www.dropwizard.io/en/latest/manual/configuration.html#logging
 #
 logging:
-  level: INFO
+  level: WARN
   loggers:
-    "nl.knaw.dans":
+    "nl.knaw.dans.ingest":
       level: TRACE
-      additive: false
+    "nl.knaw.dans.ingest.core.sequencing.DepositSequenceManager":
+      level: TRACE
+      additive: true
   appenders:
     - type: console
       logFormat: "%-5p [%d{ISO8601}] [%t] %c: %m%n%rEx"
