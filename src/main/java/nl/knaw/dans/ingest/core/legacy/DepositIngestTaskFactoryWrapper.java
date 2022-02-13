@@ -24,7 +24,7 @@ import nl.knaw.dans.easy.dd2d.migrationinfo.MigrationInfo;
 import nl.knaw.dans.easy.dd2d.migrationinfo.MigrationInfoConfig;
 import nl.knaw.dans.ingest.core.config.DataverseConfigScala;
 import nl.knaw.dans.ingest.core.config.HttpServiceConfig;
-import nl.knaw.dans.ingest.core.config.IngestConfig;
+import nl.knaw.dans.ingest.core.config.IngestFlowConfig;
 import nl.knaw.dans.ingest.core.service.EventWriter;
 import nl.knaw.dans.lib.dataverse.DataverseInstance;
 import nl.knaw.dans.lib.dataverse.DataverseInstanceConfig;
@@ -44,7 +44,7 @@ public class DepositIngestTaskFactoryWrapper {
     private final DepositIngestTaskFactory factory;
 
     public DepositIngestTaskFactoryWrapper(
-        IngestConfig ingestConfig,
+        IngestFlowConfig ingestFlowConfig,
         DataverseConfigScala dataverseConfigScala,
         HttpServiceConfig migrationInfoConfig,
         HttpServiceConfig validationDansBagConfig) {
@@ -72,20 +72,20 @@ public class DepositIngestTaskFactoryWrapper {
             false // TODO: make configurable
         );
 
-        final Elem narcisClassification = DepositIngestTaskFactory.readXml(ingestConfig.getMappingDefsDir().resolve("narcis_classification.xml").toFile());
-        final Map<String, String> iso1ToDataverseLanguage = getMap(ingestConfig, "iso639-1-to-dv.csv", "ISO639-1", "Dataverse-language");
-        final Map<String, String> iso2ToDataverseLanguage = getMap(ingestConfig, "iso639-2-to-dv.csv", "ISO639-2", "Dataverse-language");
-        final Map<String, String> reportIdToTerm = getMap(ingestConfig, "ABR-reports.csv", "URI-suffix", "Term");
-        final Map<String, String> variantToLicense = getMap(ingestConfig, "license-uri-variants.csv", "Variant", "Normalized");
-        final List<URI> supportedLicenses = getUriList(ingestConfig, "supported-licenses.txt");
+        final Elem narcisClassification = DepositIngestTaskFactory.readXml(ingestFlowConfig.getMappingDefsDir().resolve("narcis_classification.xml").toFile());
+        final Map<String, String> iso1ToDataverseLanguage = getMap(ingestFlowConfig, "iso639-1-to-dv.csv", "ISO639-1", "Dataverse-language");
+        final Map<String, String> iso2ToDataverseLanguage = getMap(ingestFlowConfig, "iso639-2-to-dv.csv", "ISO639-2", "Dataverse-language");
+        final Map<String, String> reportIdToTerm = getMap(ingestFlowConfig, "ABR-reports.csv", "URI-suffix", "Term");
+        final Map<String, String> variantToLicense = getMap(ingestFlowConfig, "license-uri-variants.csv", "Variant", "Normalized");
+        final List<URI> supportedLicenses = getUriList(ingestFlowConfig, "supported-licenses.txt");
 
         factory = new DepositIngestTaskFactory(
             true,
-            Option.apply(Pattern.compile(ingestConfig.getFileExclusionPattern())),
-            new ZipFileHandler(File.apply(ingestConfig.getZipWrappingTempDir())),
-            ingestConfig.getDepositorRole(),
+            Option.apply(Pattern.compile(ingestFlowConfig.getFileExclusionPattern())),
+            new ZipFileHandler(File.apply(ingestFlowConfig.getZipWrappingTempDir())),
+            ingestFlowConfig.getDepositorRole(),
             false,
-            ingestConfig.isDeduplicate(),
+            ingestFlowConfig.isDeduplicate(),
             DepositIngestTaskFactory.getActiveMetadataBlocks(dataverseInstance).get(),
             Option.apply(validator),
             dataverseInstance,
@@ -100,16 +100,16 @@ public class DepositIngestTaskFactoryWrapper {
             reportIdToTerm);
     }
 
-    private Map<String, String> getMap(IngestConfig ingestConfig, String mappingCsv, String keyColumn, String valueColumn) {
+    private Map<String, String> getMap(IngestFlowConfig ingestFlowConfig, String mappingCsv, String keyColumn, String valueColumn) {
         return DepositIngestTaskFactory
-            .loadCsvToMap(File.apply(ingestConfig.getMappingDefsDir().resolve(mappingCsv)),
+            .loadCsvToMap(File.apply(ingestFlowConfig.getMappingDefsDir().resolve(mappingCsv)),
                 keyColumn,
                 valueColumn).get();
     }
 
-    private List<URI> getUriList(IngestConfig ingestConfig, String listFile) {
+    private List<URI> getUriList(IngestFlowConfig ingestFlowConfig, String listFile) {
         return DepositIngestTaskFactory
-            .loadTxtToUriList(File.apply(ingestConfig.getMappingDefsDir().resolve(listFile)))
+            .loadTxtToUriList(File.apply(ingestFlowConfig.getMappingDefsDir().resolve(listFile)))
             .get();
     }
 

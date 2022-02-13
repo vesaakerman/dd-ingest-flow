@@ -16,38 +16,26 @@
 
 package nl.knaw.dans.ingest;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import nl.knaw.dans.ingest.core.config.DataverseConfigScala;
 import nl.knaw.dans.ingest.core.config.HttpServiceConfig;
-import nl.knaw.dans.ingest.core.config.IngestConfig;
+import nl.knaw.dans.ingest.core.config.IngestFlowConfig;
 
 public class DdIngestFlowConfiguration extends Configuration {
 
-    private IngestConfig importConf;
-    private IngestConfig autoIngest;
+    private IngestFlowConfig ingestFlow;
     private DataverseConfigScala dataverse;
     private HttpServiceConfig validateDansBag;
     private HttpServiceConfig managePrestaging;
     private DataSourceFactory taskEventDatabase;
 
-    @JsonProperty("import")
-    public IngestConfig getImportConf() {
-        return importConf;
+    public IngestFlowConfig getIngestFlow() {
+        return ingestFlow;
     }
 
-    @JsonProperty("import")
-    public void setImportConf(IngestConfig importConf) {
-        this.importConf = importConf;
-    }
-
-    public IngestConfig getAutoIngest() {
-        return autoIngest;
-    }
-
-    public void setAutoIngest(IngestConfig autoIngest) {
-        this.autoIngest = autoIngest;
+    public void setIngestFlow(IngestFlowConfig ingestFlow) {
+        this.ingestFlow = ingestFlow;
     }
 
     public DataverseConfigScala getDataverse() {

@@ -61,23 +61,25 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
 
     @Override
     public void run(final DdIngestFlowConfiguration configuration, final Environment environment) {
-        final ExecutorService taskExecutor = configuration.getImportConf().getTaskQueue().build(environment);
+        final ExecutorService taskExecutor = configuration.getIngestFlow().getTaskQueue().build(environment);
         final TargettedTaskSequenceManager targettedTaskSequenceManager = new TargettedTaskSequenceManager(taskExecutor);
         final DepositIngestTaskFactoryWrapper importTaskFactoryWrapper = new DepositIngestTaskFactoryWrapper(
-            configuration.getImportConf(),
+            configuration.getIngestFlow(),
             configuration.getDataverse(),
             configuration.getManagePrestaging(),
             configuration.getValidateDansBag());
-        final TaskEventDAO taskEventDAO = new TaskEventDAO(hibernateBundle.getSessionFactory());
-        final TaskEventService taskEventService = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(TaskEventServiceImpl.class, TaskEventDAO.class, taskEventDAO);
         final EnqueuingService enqueuingService = new EnqueuingServiceImpl(targettedTaskSequenceManager);
 
+        final TaskEventDAO taskEventDAO = new TaskEventDAO(hibernateBundle.getSessionFactory());
+        final TaskEventService taskEventService = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(TaskEventServiceImpl.class, TaskEventDAO.class, taskEventDAO);
+
         final ImportInbox inbox = new ImportInbox(
-            configuration.getImportConf().getInbox(),
-            configuration.getImportConf().getOutbox(),
+            configuration.getIngestFlow().getImportConfig().getInbox(),
+            configuration.getIngestFlow().getImportConfig().getOutbox(),
             importTaskFactoryWrapper,
             taskEventService,
             enqueuingService);
+
         environment.jersey().register(new ImportResource(inbox));
     }
 }

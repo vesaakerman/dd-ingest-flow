@@ -13,7 +13,7 @@ parser.add_argument('-c', '--continue',
                     help='continue previously stopped batch (output directory is allowed to be non-empty)')
 args = parser.parse_args()
 
-r = requests.post('http://localhost:20000/import', json={
+r = requests.post('http://localhost:20300/import', json={
     'batch': os.path.abspath(args.batch),
     'continue': args.continue_previous
 })

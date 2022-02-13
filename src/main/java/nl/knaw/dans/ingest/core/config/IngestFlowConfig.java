@@ -15,20 +15,22 @@
  */
 package nl.knaw.dans.ingest.core.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.dans.lib.util.ExecutorServiceFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 
-public class IngestConfig {
+public class IngestFlowConfig {
     @NotNull
     @Valid
-    private Path inbox;
+    @JsonProperty("import")
+    private InOutConfig importConfig;
 
     @NotNull
     @Valid
-    private Path outbox;
+    private InOutConfig autoIngest;
 
     @NotNull
     @Valid
@@ -53,20 +55,20 @@ public class IngestConfig {
     @Valid
     private ExecutorServiceFactory taskQueue;
 
-    public Path getInbox() {
-        return inbox;
+    public InOutConfig getImportConfig() {
+        return importConfig;
     }
 
-    public void setInbox(Path inbox) {
-        this.inbox = inbox;
+    public void setImportConfig(InOutConfig importConfig) {
+        this.importConfig = importConfig;
     }
 
-    public Path getOutbox() {
-        return outbox;
+    public InOutConfig getAutoIngest() {
+        return autoIngest;
     }
 
-    public void setOutbox(Path outbox) {
-        this.outbox = outbox;
+    public void setAutoIngest(InOutConfig autoIngest) {
+        this.autoIngest = autoIngest;
     }
 
     public Path getZipWrappingTempDir() {
