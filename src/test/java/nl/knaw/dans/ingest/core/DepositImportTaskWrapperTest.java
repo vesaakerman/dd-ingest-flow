@@ -86,7 +86,6 @@ public class DepositImportTaskWrapperTest {
         assertTrue(thrown.getMessage().contains("There should be exactly one Created value; found 2"));
     }
 
-
     private static DepositImportTaskWrapper createTaskWrapper(String depositName) {
         return new DepositImportTaskWrapper(new DepositMigrationTask(
             new Deposit(File.apply(testDepositsBasedir.resolve(depositName))),

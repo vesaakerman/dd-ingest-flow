@@ -56,7 +56,7 @@ class LicenseSpec extends TestSupportFixture {
 
   it should "throw an IllegalArgumentException if isLicense returns false" in {
     val lic = <dct:rights xmlns:dct="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dcterms:URI">http://creativecommons.org/licenses/by-sa/4.0/</dct:rights>
-    an [IllegalArgumentException] shouldBe thrownBy(License.getLicenseUri(supportedLicenses)(variantToLicense)(lic))
+    an[IllegalArgumentException] shouldBe thrownBy(License.getLicenseUri(supportedLicenses)(variantToLicense)(lic))
   }
 
   it should "Return a supported license given a configured variant" in {
@@ -81,5 +81,4 @@ class LicenseSpec extends TestSupportFixture {
     val lic = <dct:license xmlns:dct="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dcterms:URI">{alreadyNormalized}</dct:license>
     License.getLicenseUri(supportedLicenses)(variantToLicense)(lic) shouldBe new URI(alreadyNormalized)
   }
-
 }

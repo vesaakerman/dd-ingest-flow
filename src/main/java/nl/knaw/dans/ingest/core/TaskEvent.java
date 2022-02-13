@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.ingest.core;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -43,6 +45,9 @@ public class TaskEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "batch")
+    private String batch;
+
     @Column(name = "timestamp", nullable = false)
     private OffsetDateTime timestamp;
 
@@ -55,10 +60,11 @@ public class TaskEvent {
     @Column(name = "result", nullable = false, length = 20)
     private String result;
 
-    @Column(name = "message")
+    @Column(name = "message", length = 1000)
     private String message;
 
-    public TaskEvent(OffsetDateTime timestamp, UUID depositId, EventType evenType, Result result, String message) {
+    public TaskEvent(String batch, OffsetDateTime timestamp, UUID depositId, EventType evenType, Result result, String message) {
+        this.batch = batch;
         this.timestamp = timestamp;
         this.depositId = depositId.toString();
         this.evenType = evenType.name();
@@ -72,6 +78,14 @@ public class TaskEvent {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getBatch() {
+        return batch;
+    }
+
+    public void setBatch(String batch) {
+        this.batch = batch;
     }
 
     public OffsetDateTime getTimestamp() {
@@ -111,6 +125,6 @@ public class TaskEvent {
     }
 
     public void setMessage(String message) {
-        this.message = message;
+        this.message = StringUtils.truncate(message, 1000);
     }
 }

@@ -19,10 +19,10 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Metadata;
 import nl.knaw.dans.easy.dd2d.DepositIngestTask;
 import nl.knaw.dans.easy.dd2d.FailedDepositException;
+import nl.knaw.dans.easy.dd2d.RejectedDepositException;
 import nl.knaw.dans.ingest.core.TaskEvent;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTask;
-import nl.knaw.dans.ingest.core.service.TaskEventService;
-import nl.knaw.dans.easy.dd2d.RejectedDepositException;
+import nl.knaw.dans.ingest.core.service.EventWriter;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -32,12 +32,12 @@ import java.util.UUID;
 public class DepositImportTaskWrapper implements TargettedTask, Comparable<DepositImportTaskWrapper> {
     private final DepositIngestTask task;
     private final Instant created;
-    private final TaskEventService taskEventService;
+    private final EventWriter eventWriter;
 
-    public DepositImportTaskWrapper(DepositIngestTask task, TaskEventService taskEventService) {
+    public DepositImportTaskWrapper(DepositIngestTask task, EventWriter eventWriter) {
         this.task = task;
         this.created = getCreatedInstant(task);
-        this.taskEventService = taskEventService;
+        this.eventWriter = eventWriter;
     }
 
     @Override
@@ -51,14 +51,16 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
 
     @Override
     public void run() {
-        taskEventService.writeEvent(getDepositId(), TaskEvent.EventType.START_PROCESSING, TaskEvent.Result.OK, null);
+        eventWriter.write(getDepositId(), TaskEvent.EventType.START_PROCESSING, TaskEvent.Result.OK, null);
         try {
             task.run().get();
-            taskEventService.writeEvent(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.OK, null);
-        } catch (RejectedDepositException e) {
-            taskEventService.writeEvent(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.REJECTED, e.getMessage());
-        } catch (FailedDepositException e) {
-            taskEventService.writeEvent(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.FAILED, e.getMessage());
+            eventWriter.write(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.OK, null);
+        }
+        catch (RejectedDepositException e) {
+            eventWriter.write(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.REJECTED, e.getMessage());
+        }
+        catch (FailedDepositException e) {
+            eventWriter.write(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.FAILED, e.getMessage());
         }
     }
 
@@ -77,7 +79,7 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
         }
         Metadata metadata = bag.getMetadata();
         if (metadata == null) {
-            throw new IllegalArgumentException("bag-info.txt not found in bag; task = " +  t);
+            throw new IllegalArgumentException("bag-info.txt not found in bag; task = " + t);
         }
         List<String> createdValues = metadata.get("Created");
         if (createdValues == null) {

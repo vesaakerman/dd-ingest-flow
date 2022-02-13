@@ -110,7 +110,4 @@ class SubjectSpec extends TestSupportFixture with BlockCitation with Unsupported
         valueURI="http://vocab.getty.edu/aat/300239261" xml:lang="en">buttons (fasteners)</ddm:subject>
     Subject.removeMatchPrefix(xml) shouldBe "buttons (fasteners)"
   }
-
-
-
 }

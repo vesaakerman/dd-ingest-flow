@@ -72,5 +72,4 @@ class TemporalAbrSpec extends TestSupportFixture with BlockArchaeologySpecific w
 
     TemporalAbr.isAbrPeriod(xml) shouldBe false
   }
-
 }

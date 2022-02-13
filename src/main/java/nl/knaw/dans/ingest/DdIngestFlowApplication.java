@@ -26,6 +26,8 @@ import nl.knaw.dans.ingest.core.ImportInbox;
 import nl.knaw.dans.ingest.core.TaskEvent;
 import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.ingest.core.service.EnqueuingService;
+import nl.knaw.dans.ingest.core.service.EnqueuingServiceImpl;
 import nl.knaw.dans.ingest.core.service.TaskEventService;
 import nl.knaw.dans.ingest.core.service.TaskEventServiceImpl;
 import nl.knaw.dans.ingest.db.TaskEventDAO;
@@ -68,7 +70,14 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
             configuration.getValidateDansBag());
         final TaskEventDAO taskEventDAO = new TaskEventDAO(hibernateBundle.getSessionFactory());
         final TaskEventService taskEventService = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(TaskEventServiceImpl.class, TaskEventDAO.class, taskEventDAO);
-        final ImportInbox inbox = new ImportInbox(configuration.getImportConf().getInbox(), importTaskFactoryWrapper, targettedTaskSequenceManager, taskEventService);
+        final EnqueuingService enqueuingService = new EnqueuingServiceImpl(targettedTaskSequenceManager);
+
+        final ImportInbox inbox = new ImportInbox(
+            configuration.getImportConf().getInbox(),
+            configuration.getImportConf().getOutbox(),
+            importTaskFactoryWrapper,
+            taskEventService,
+            enqueuingService);
         environment.jersey().register(new ImportResource(inbox));
     }
 }

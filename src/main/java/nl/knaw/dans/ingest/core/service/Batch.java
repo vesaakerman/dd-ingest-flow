@@ -15,23 +15,17 @@
  */
 package nl.knaw.dans.ingest.core.service;
 
-import io.dropwizard.hibernate.UnitOfWork;
-import nl.knaw.dans.ingest.core.TaskEvent;
-import nl.knaw.dans.ingest.db.TaskEventDAO;
+import nl.knaw.dans.ingest.core.legacy.DepositImportTaskWrapper;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import java.util.List;
 
-public class TaskEventServiceImpl implements TaskEventService {
-    private final TaskEventDAO taskEventDAO;
+public interface Batch {
 
-    public TaskEventServiceImpl(TaskEventDAO taskEventDAO) {
-        this.taskEventDAO = taskEventDAO;
-    }
+    EventWriter getEventWriter();
 
-    @Override
-    @UnitOfWork
-    public void writeEvent(String batch, UUID depositId, TaskEvent.EventType eventType, TaskEvent.Result result, String message) {
-        taskEventDAO.save(new TaskEvent(batch, OffsetDateTime.now(), depositId, eventType, result, message));
-    }
+    // TODO: change to iterator or stream, so that this can also be used as a continuous source of tasks?
+    List<DepositImportTaskWrapper> getTasks();
+
+    boolean isFailed();
+
 }
