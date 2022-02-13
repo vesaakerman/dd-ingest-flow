@@ -15,23 +15,20 @@
  */
 package nl.knaw.dans.ingest.core.service;
 
-import io.dropwizard.hibernate.UnitOfWork;
 import nl.knaw.dans.ingest.core.TaskEvent;
-import nl.knaw.dans.ingest.db.TaskEventDAO;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public class TaskEventServiceImpl implements TaskEventService {
-    private final TaskEventDAO taskEventDAO;
+public class EventWriter {
+    private final TaskEventService taskEventService;
+    private final String name;
 
-    public TaskEventServiceImpl(TaskEventDAO taskEventDAO) {
-        this.taskEventDAO = taskEventDAO;
+    public EventWriter(TaskEventService taskEventService, String name) {
+        this.taskEventService = taskEventService;
+        this.name = name;
     }
 
-    @Override
-    @UnitOfWork
-    public void writeEvent(String batch, UUID depositId, TaskEvent.EventType eventType, TaskEvent.Result result, String message) {
-        taskEventDAO.save(new TaskEvent(batch, OffsetDateTime.now(), depositId, eventType, result, message));
+    public void write(UUID depositId, TaskEvent.EventType eventType, TaskEvent.Result result, String message) {
+        taskEventService.writeEvent(name, depositId, eventType, result, message);
     }
 }

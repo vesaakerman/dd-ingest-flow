@@ -15,23 +15,10 @@
  */
 package nl.knaw.dans.ingest.core.service;
 
-import io.dropwizard.hibernate.UnitOfWork;
-import nl.knaw.dans.ingest.core.TaskEvent;
-import nl.knaw.dans.ingest.db.TaskEventDAO;
+/**
+ * Enqueues a batch of tasks
+ */
+public interface EnqueuingService {
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-public class TaskEventServiceImpl implements TaskEventService {
-    private final TaskEventDAO taskEventDAO;
-
-    public TaskEventServiceImpl(TaskEventDAO taskEventDAO) {
-        this.taskEventDAO = taskEventDAO;
-    }
-
-    @Override
-    @UnitOfWork
-    public void writeEvent(String batch, UUID depositId, TaskEvent.EventType eventType, TaskEvent.Result result, String message) {
-        taskEventDAO.save(new TaskEvent(batch, OffsetDateTime.now(), depositId, eventType, result, message));
-    }
+    void executeEnqueue(Batch source);
 }

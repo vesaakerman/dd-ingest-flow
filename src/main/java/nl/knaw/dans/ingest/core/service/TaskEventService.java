@@ -21,5 +21,5 @@ import java.util.UUID;
 
 public interface TaskEventService {
 
-    void writeEvent(UUID depositId, TaskEvent.EventType eventType, TaskEvent.Result result, String message);
+    void writeEvent(String batch, UUID depositId, TaskEvent.EventType eventType, TaskEvent.Result result, String message);
 }

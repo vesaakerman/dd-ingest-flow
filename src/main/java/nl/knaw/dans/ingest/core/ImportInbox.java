@@ -15,9 +15,10 @@
  */
 package nl.knaw.dans.ingest.core;
 
-import nl.knaw.dans.ingest.core.legacy.DepositImportTaskWrapper;
 import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
-import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.ingest.core.service.Batch;
+import nl.knaw.dans.ingest.core.service.BatchImpl;
+import nl.knaw.dans.ingest.core.service.EnqueuingService;
 import nl.knaw.dans.ingest.core.service.TaskEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,56 +26,31 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class ImportInbox {
     private static final Logger log = LoggerFactory.getLogger(ImportInbox.class);
     private final Path inboxDir;
     private final DepositIngestTaskFactoryWrapper taskFactory;
-    private final TargettedTaskSequenceManager targettedTaskSequenceManager;
     private final TaskEventService taskEventService;
-    private final ExecutorService enqueingExecutor = Executors.newSingleThreadExecutor();
+    private final EnqueuingService enqueuingService;
 
-    public ImportInbox(Path inboxDir, DepositIngestTaskFactoryWrapper taskFactory,
-        TargettedTaskSequenceManager targettedTaskSequenceManager, TaskEventService taskEventService) {
+    public ImportInbox(Path inboxDir, DepositIngestTaskFactoryWrapper taskFactory, TaskEventService taskEventService, EnqueuingService enqueuingService) {
         this.inboxDir = inboxDir;
         this.taskFactory = taskFactory;
-        this.targettedTaskSequenceManager = targettedTaskSequenceManager;
         this.taskEventService = taskEventService;
+        this.enqueuingService = enqueuingService;
     }
 
-    public void importBatch(Path batch, boolean continuePrevious) {
-        Path batchDir = inboxDir.resolve(batch);
+    public void importBatch(Path batchPath, boolean continuePrevious) {
+        Path batchDir = inboxDir.resolve(batchPath);
         validateBatchDir(batchDir);
-        taskFactory.setOutbox(initOutbox(batch, continuePrevious));
-        // Enqueuing can take a while; in order to return to the caller as soon as possible we dispatch this to dedicated thread
-        enqueingExecutor.execute(() -> {
-            try {
-                Files.list(batchDir)
-                    .map(d -> taskFactory.createIngestTask(d, taskEventService))
-                    .sorted()
-                    .collect(Collectors.toList())
-                    .forEach(this::enqueue);
-            }
-            catch (IOException e) {
-                // TODO: mark batch as "failed to start"
-                e.printStackTrace();
-            }
-        });
-    }
+        taskFactory.setOutbox(initOutbox(batchDir, continuePrevious));
 
-    private void enqueue(DepositImportTaskWrapper w) {
-        log.trace("Enqueuing {}", w);
-        try {
-            targettedTaskSequenceManager.scheduleTask(w);
-            taskEventService.writeEvent(w.getDepositId(), TaskEvent.EventType.ENQUEUE, TaskEvent.Result.OK, null);
-        }
-        catch (Exception e) {
-            log.error("Enqueing of {} failed", w, e);
-            taskEventService.writeEvent(w.getDepositId(), TaskEvent.EventType.ENQUEUE, TaskEvent.Result.FAILED, e.getMessage());
-        }
+        // TODO: batchPath is absolute, validate that is in the inboxDir and then relativize it
+        Batch batch = new BatchImpl(batchPath.toString(), batchDir, taskEventService, taskFactory);
+
+        enqueuingService.executeEnqueue(batch);
+
     }
 
     private void validateBatchDir(Path batchDir) {

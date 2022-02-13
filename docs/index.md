@@ -9,7 +9,6 @@ SYNOPSIS
 
     dd-ingest-flow { server | check }
 
-
 DESCRIPTION
 -----------
 
@@ -30,12 +29,12 @@ EXAMPLES
 --------
 
 <!-- Add examples of invoking this module from the command line or via HTTP other interfaces -->
-    
+
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
 Currently this project is built as an RPM package for RHEL7/CentOS7 and later. The RPM will install the binaries to
-`/opt/dans.knaw.nl/dd-ingest-flow` and the configuration files to `/etc/opt/dans.knaw.nl/dd-ingest-flow`. 
+`/opt/dans.knaw.nl/dd-ingest-flow` and the configuration files to `/etc/opt/dans.knaw.nl/dd-ingest-flow`.
 
 For installation on systems that do no support RPM and/or systemd:
 
@@ -55,14 +54,13 @@ Prerequisites:
 * RPM
 
 Steps:
-    
+
     git clone https://github.com/DANS-KNAW/dd-ingest-flow.git
     cd dd-ingest-flow 
     mvn clean install
 
-If the `rpm` executable is found at `/usr/local/bin/rpm`, the build profile that includes the RPM 
-packaging will be activated. If `rpm` is available, but at a different path, then activate it by using
-Maven's `-P` switch: `mvn -Pprm install`.
+If the `rpm` executable is found at `/usr/local/bin/rpm`, the build profile that includes the RPM packaging will be activated. If `rpm` is available, but at a
+different path, then activate it by using Maven's `-P` switch: `mvn -Pprm install`.
 
 Alternatively, to build the tarball execute:
 
