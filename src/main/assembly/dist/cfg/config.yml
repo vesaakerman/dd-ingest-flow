@@ -46,13 +46,12 @@ ingestFlow:
 #
 dataverse:
   http:
-    baseUrl: 'http://dar.dans.knaw.nl:8080'
+    baseUrl: 'http://localhost:8080'
     connectionTimeoutMs: 10000
     readTimeoutMs: 30000
   api:
     apiVersion: 1
-    apiKey: '93969514-87af-4b75-9817-a4b60c3a79bf'
-    unblockKey: 's3kretKey'
+    apiKey: 'changeme'
     publishAwaitUnlockMaxRetries: 900
     publishAwaitUnlockWaitTimeMs: 3000
     awaitUnlockMaxRetries: 30
@@ -61,7 +60,7 @@ dataverse:
 taskEventDatabase:
   driverClass: org.postgresql.Driver
   url: jdbc:postgresql://localhost:5432/dd_ingest_flow
-  user: changeme
+  user: dd_ingest_flow
   password: changeme
   logValidationErrors: true
   properties:
@@ -82,17 +81,8 @@ managePrestaging:
 # See https://www.dropwizard.io/en/latest/manual/configuration.html#logging
 #
 logging:
-  level: WARN
-  loggers:
-    "nl.knaw.dans.ingest":
-      level: TRACE
-    "nl.knaw.dans.ingest.core.sequencing.DepositSequenceManager":
-      level: TRACE
-      additive: true
+  level: INFO
   appenders:
-    - type: console
-      logFormat: "%-5p [%d{ISO8601}] [%t] %c: %m%n%rEx"
-
     - type: file
       archive: false
-      currentLogFilename: data/dd-ingest-flow.log
+      currentLogFilename: /var/opt/dans.knaw.nl/log/dd-ingest-flow/dd-ingest-flow.log
