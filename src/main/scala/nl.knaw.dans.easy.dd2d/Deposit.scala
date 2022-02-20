@@ -155,7 +155,9 @@ case class Deposit(dir: File) extends DebugEnhancedLogging {
     for {
       ddm <- tryDdm
       dateAvailable = (ddm \ "profile" \ "available").map(_.text).headOption.getOrElse(throw new IllegalArgumentException("Deposit without a ddm:available element"))
-    } yield dateAvailableFormat.parse(dateAvailable)
+      _ = logger.info(s"Found date available = '$dateAvailable'")
+      date <- Try { dateAvailableFormat.parse(dateAvailable) }
+    } yield date
   }
 
   def isUpdate: Try[Boolean] = {
