@@ -253,7 +253,7 @@
                                         <source>
                                             <location>src/main/assembly/dist/bin</location>
                                             <includes>
-                                                <include>ds-ingest-flow</include>
+                                                <include>ingest-flow</include>
                                             </includes>
                                         </source>
                                     </sources>
