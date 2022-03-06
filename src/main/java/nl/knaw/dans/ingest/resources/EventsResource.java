@@ -21,7 +21,6 @@ import nl.knaw.dans.ingest.db.TaskEventDAO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.util.List;
@@ -37,18 +36,9 @@ public class EventsResource {
 
     @GET
     @Produces("text/csv")
-    @Path("/batch/{batch}")
     @UnitOfWork
-    public List<TaskEvent> getEventsByBatch(@PathParam("batch") String batch) {
-        return taskEventDAO.getEventsByBatch(batch);
-    }
-
-    @GET
-    @Produces("text/csv")
-    @Path("/deposit/{depositId}")
-    @UnitOfWork
-    public List<TaskEvent> getEventsByDeposit(@PathParam("depositId") String depositId) {
-        return taskEventDAO.getEventsByDeposit(depositId);
+    public List<TaskEvent> getEvents(@QueryParam("source") String batchName, @QueryParam("depositId") String depositId) {
+        return taskEventDAO.getEvents(batchName, depositId);
     }
 
 }

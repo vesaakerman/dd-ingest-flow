@@ -45,8 +45,8 @@ public class TaskEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "batch")
-    private String batch;
+    @Column(name = "source")
+    private String source;
 
     @Column(name = "timestamp", nullable = false)
     private OffsetDateTime timestamp;
@@ -66,8 +66,8 @@ public class TaskEvent {
     public TaskEvent() {
     }
 
-    public TaskEvent(String batch, OffsetDateTime timestamp, UUID depositId, EventType evenType, Result result, String message) {
-        this.batch = batch;
+    public TaskEvent(String source, OffsetDateTime timestamp, UUID depositId, EventType evenType, Result result, String message) {
+        this.source = source;
         this.timestamp = timestamp;
         this.depositId = depositId.toString();
         this.evenType = evenType.name();
@@ -83,12 +83,12 @@ public class TaskEvent {
         this.id = id;
     }
 
-    public String getBatch() {
-        return batch;
+    public String getSource() {
+        return source;
     }
 
-    public void setBatch(String batch) {
-        this.batch = batch;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public OffsetDateTime getTimestamp() {

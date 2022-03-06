@@ -16,14 +16,9 @@ def start_import(path, continue_previous, migration):
     })
     print('Server responded: %s' % r.text)
 
-def list_events_for_batch(batch):
-    r = requests.get('%s/events/batch/%s' % (service_baseurl, batch), headers={'Accept': 'text/csv'})
+def list_events(params):
+    r = requests.get('%s/events' % service_baseurl, headers={'Accept': 'text/csv'}, params=params)
     print(r.text)
-
-def list_events_for_deposit(depositId):
-    r = requests.get('%s/events/deposit/%s' % (service_baseurl, depositId), headers={'Accept': 'text/csv'})
-    print(r.text)
-
 
 parser = argparse.ArgumentParser(add_help=True)
 subparsers = parser.add_subparsers(dest='command')
@@ -45,10 +40,10 @@ parser_import.add_argument('-m', '--migration',
 
 parser_events = subparsers.add_parser('list-events',
                                       help='print events per deposit')
-parser_events.add_argument('-b', '--batch',
-                           dest='batch',
-                           metavar='<batch>',
-                           help='only events for this batch')
+parser_events.add_argument('-s', '--source',
+                           dest='source',
+                           metavar='<source>',
+                           help='only events for this source (i.e. batch or auto-ingest)')
 parser_events.add_argument('-d', '--deposit',
                            metavar='<uuid>',
                            dest='deposit_id',
@@ -70,7 +65,9 @@ args = parser.parse_args()
 if args.command == 'start-import':
     start_import(args.batch, args.continue_previous, args.migration)
 elif args.command == 'list-events':
-    if args.batch is not None:
-        list_events_for_batch(args.batch)
-    elif args.deposit_id is not None:
-        list_events_for_deposit(args.deposit_id)
+    params = {}
+    if args.source is not None:
+        params['source'] = args.source
+    if args.deposit_id is not None:
+        params['depositId'] = args.deposit_id
+    list_events(params)
