@@ -18,8 +18,12 @@ package nl.knaw.dans.ingest.db;
 import io.dropwizard.hibernate.AbstractDAO;
 import nl.knaw.dans.ingest.core.TaskEvent;
 import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.LinkedList;
 import java.util.List;
 
 public class TaskEventDAO extends AbstractDAO<TaskEvent> {
@@ -32,17 +36,38 @@ public class TaskEventDAO extends AbstractDAO<TaskEvent> {
         return persist(taskEvent);
     }
 
-    public List<TaskEvent> getEventsByBatch(String batchName) {
-        Query<TaskEvent> query = currentSession().createQuery("from TaskEvent "
-            + "where batch = :batchName", TaskEvent.class);
-        query.setParameter("batchName", batchName);
-        return query.list();
+    public List<TaskEvent> getEvents(String sourceName, String depositId) {
+        // TODO: add filter criteria for eventType, result, max-age
+        CriteriaBuilder cb = currentSession().getCriteriaBuilder();
+        CriteriaQuery<TaskEvent> crit = cb.createQuery(TaskEvent.class);
+        Root<TaskEvent> r = crit.from(TaskEvent.class);
+        List<Predicate> predicates = new LinkedList<>();
+        if (sourceName != null) {
+            predicates.add(cb.equal(r.get("source"), sourceName));
+        }
+        if (depositId != null) {
+            predicates.add(cb.equal(r.get("depositId"), depositId));
+        }
+        crit.select(r).where(cb.and(predicates.toArray(new Predicate[0])));
+        return currentSession().createQuery(crit).list();
     }
 
-    public List<TaskEvent> getEventsByDeposit(String depositId) {
-        Query<TaskEvent> query = currentSession().createQuery("from TaskEvent "
-            + "where depositId = :depositId", TaskEvent.class);
-        query.setParameter("depositId", depositId);
-        return query.list();
-    }
+    // TODO: figure this out
+    //    public StateStats getStateStats(String sourceName) {
+    //        CriteriaBuilder cb = currentSession().getCriteriaBuilder();
+    //        CriteriaQuery<TaskEvent> crit = cb.createQuery(TaskEvent.class);
+    //        Root<TaskEvent> r = crit.from(TaskEvent.class);
+    //        List<Predicate> predicates = new LinkedList<>();
+    //        if (sourceName != null) {
+    //            predicates.add(cb.equal(r.get("source"), sourceName));
+    //        }
+    //        crit.select(r)
+    //            .where(cb.and(predicates.toArray(new Predicate[0])))
+    //            .groupBy(r.get("depositId"))
+    //            .multiselect(r.get("event_type"), cb.max(r.get("timestamp")));
+    //          currentSession().createQuery(crit).list();
+    //
+    //
+    //    }
+
 }
