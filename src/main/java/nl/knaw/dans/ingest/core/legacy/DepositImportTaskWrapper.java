@@ -21,15 +21,19 @@ import nl.knaw.dans.easy.dd2d.DepositIngestTask;
 import nl.knaw.dans.easy.dd2d.FailedDepositException;
 import nl.knaw.dans.easy.dd2d.RejectedDepositException;
 import nl.knaw.dans.ingest.core.TaskEvent;
-import nl.knaw.dans.ingest.core.sequencing.TargettedTask;
+import nl.knaw.dans.ingest.core.sequencing.TargetedTask;
 import nl.knaw.dans.ingest.core.service.EventWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public class DepositImportTaskWrapper implements TargettedTask, Comparable<DepositImportTaskWrapper> {
+public class DepositImportTaskWrapper implements TargetedTask, Comparable<DepositImportTaskWrapper> {
+    private static final Logger log = LoggerFactory.getLogger(DepositImportTaskWrapper.class);
+
     private final DepositIngestTask task;
     private final Instant created;
     private final EventWriter eventWriter;
@@ -49,18 +53,24 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
         return UUID.fromString(task.deposit().depositId());
     }
 
+
+    @Override
+    public void writeEvent(TaskEvent.EventType eventType, TaskEvent.Result result, String message) {
+        eventWriter.write(getDepositId(), eventType, result, message);
+    }
+
     @Override
     public void run() {
-        eventWriter.write(getDepositId(), TaskEvent.EventType.START_PROCESSING, TaskEvent.Result.OK, null);
+        writeEvent(TaskEvent.EventType.START_PROCESSING, TaskEvent.Result.OK, null);
         try {
             task.run().get();
-            eventWriter.write(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.OK, null);
+            writeEvent(TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.OK, null);
         }
         catch (RejectedDepositException e) {
-            eventWriter.write(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.REJECTED, e.getMessage());
+            writeEvent(TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.REJECTED, e.getMessage());
         }
         catch (FailedDepositException e) {
-            eventWriter.write(getDepositId(), TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.FAILED, e.getMessage());
+            writeEvent(TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.FAILED, e.getMessage());
         }
     }
 
@@ -70,7 +80,7 @@ public class DepositImportTaskWrapper implements TargettedTask, Comparable<Depos
     }
 
     private static Instant getCreatedInstant(DepositIngestTask t) {
-        Bag bag = null;
+        Bag bag;
         try {
             bag = t.deposit().tryBag().get();
         }

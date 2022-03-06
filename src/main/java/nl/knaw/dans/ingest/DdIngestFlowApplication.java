@@ -22,16 +22,19 @@ import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.dans.ingest.core.AutoIngestInbox;
+import nl.knaw.dans.ingest.core.CsvMessageBodyWriter;
 import nl.knaw.dans.ingest.core.ImportInbox;
 import nl.knaw.dans.ingest.core.TaskEvent;
 import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
-import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.ingest.core.sequencing.TargetedTaskSequenceManager;
 import nl.knaw.dans.ingest.core.service.EnqueuingService;
 import nl.knaw.dans.ingest.core.service.EnqueuingServiceImpl;
 import nl.knaw.dans.ingest.core.service.TaskEventService;
 import nl.knaw.dans.ingest.core.service.TaskEventServiceImpl;
 import nl.knaw.dans.ingest.db.TaskEventDAO;
-import nl.knaw.dans.ingest.resources.ImportResource;
+import nl.knaw.dans.ingest.resources.EventsResource;
+import nl.knaw.dans.ingest.resources.ImportsResource;
 
 import java.util.concurrent.ExecutorService;
 
@@ -62,24 +65,43 @@ public class DdIngestFlowApplication extends Application<DdIngestFlowConfigurati
     @Override
     public void run(final DdIngestFlowConfiguration configuration, final Environment environment) {
         final ExecutorService taskExecutor = configuration.getIngestFlow().getTaskQueue().build(environment);
-        final TargettedTaskSequenceManager targettedTaskSequenceManager = new TargettedTaskSequenceManager(taskExecutor);
-        final DepositIngestTaskFactoryWrapper importTaskFactoryWrapper = new DepositIngestTaskFactoryWrapper(
+        final TargetedTaskSequenceManager targetedTaskSequenceManager = new TargetedTaskSequenceManager(taskExecutor);
+        final DepositIngestTaskFactoryWrapper ingestTaskFactoryWrapper = new DepositIngestTaskFactoryWrapper(
+            false,
             configuration.getIngestFlow(),
             configuration.getDataverse(),
             configuration.getManagePrestaging(),
             configuration.getValidateDansBag());
-        final EnqueuingService enqueuingService = new EnqueuingServiceImpl(targettedTaskSequenceManager);
+        final DepositIngestTaskFactoryWrapper migrationTaskFactoryWrapper = new DepositIngestTaskFactoryWrapper(
+            true,
+            configuration.getIngestFlow(),
+            configuration.getDataverse(),
+            configuration.getManagePrestaging(),
+            configuration.getValidateDansBag());
 
+        final EnqueuingService enqueuingService = new EnqueuingServiceImpl(targetedTaskSequenceManager, 2 /* Must support both importInbox and autoIngestInbox */);
         final TaskEventDAO taskEventDAO = new TaskEventDAO(hibernateBundle.getSessionFactory());
         final TaskEventService taskEventService = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(TaskEventServiceImpl.class, TaskEventDAO.class, taskEventDAO);
 
-        final ImportInbox inbox = new ImportInbox(
+        final ImportInbox importInbox = new ImportInbox(
             configuration.getIngestFlow().getImportConfig().getInbox(),
             configuration.getIngestFlow().getImportConfig().getOutbox(),
-            importTaskFactoryWrapper,
+            ingestTaskFactoryWrapper,
+            migrationTaskFactoryWrapper, // Only necessary during migration. Can be phased out after that.
             taskEventService,
             enqueuingService);
 
-        environment.jersey().register(new ImportResource(inbox));
+        final AutoIngestInbox autoIngestInbox = new AutoIngestInbox(
+            configuration.getIngestFlow().getAutoIngest().getInbox(),
+            configuration.getIngestFlow().getAutoIngest().getOutbox(),
+            ingestTaskFactoryWrapper,
+            taskEventService,
+            enqueuingService
+        );
+
+        environment.lifecycle().manage(autoIngestInbox);
+        environment.jersey().register(new ImportsResource(importInbox));
+        environment.jersey().register(new EventsResource(taskEventDAO));
+        environment.jersey().register(new CsvMessageBodyWriter());
     }
 }

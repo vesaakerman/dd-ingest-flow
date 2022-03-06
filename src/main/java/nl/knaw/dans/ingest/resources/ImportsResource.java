@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.ingest.resources;
 
-import nl.knaw.dans.ingest.api.Import;
 import nl.knaw.dans.ingest.api.ResponseMessage;
+import nl.knaw.dans.ingest.api.StartImport;
 import nl.knaw.dans.ingest.core.ImportInbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,30 +29,32 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/import")
+@Path("/imports")
 @Produces(MediaType.APPLICATION_JSON)
-public class ImportResource {
-    private static final Logger log = LoggerFactory.getLogger(ImportResource.class);
+public class ImportsResource {
+    private static final Logger log = LoggerFactory.getLogger(ImportsResource.class);
 
     private final ImportInbox inbox;
 
-    public ImportResource(ImportInbox inbox) {
+    public ImportsResource(ImportInbox inbox) {
         this.inbox = inbox;
     }
 
     @POST
+    @Path("/:start")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response startBatch(Import start) {
+    public Response startBatch(StartImport start) {
         log.trace("Received command = {}", start);
+        String batchName;
         try {
-            inbox.importBatch(start.getBatch(), start.isContinue());
+            batchName = inbox.startBatch(start.getBatch(), start.isContinue(), start.isMigration());
         }
         catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
         return Response.accepted(
-                new ResponseMessage(Response.Status.ACCEPTED.getStatusCode(), "import request was received; check progress with the 'status' command"))
+                new ResponseMessage(Response.Status.ACCEPTED.getStatusCode(),
+                    String.format("import request was received (batch = %s, continue = %s, migration = %s", batchName, start.isContinue(), start.isMigration())))
             .build();
     }
-
 }

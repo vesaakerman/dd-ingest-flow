@@ -16,8 +16,8 @@
 package nl.knaw.dans.ingest.core.service;
 
 import nl.knaw.dans.ingest.core.TaskEvent;
-import nl.knaw.dans.ingest.core.legacy.DepositImportTaskWrapper;
-import nl.knaw.dans.ingest.core.sequencing.TargettedTaskSequenceManager;
+import nl.knaw.dans.ingest.core.sequencing.TargetedTask;
+import nl.knaw.dans.ingest.core.sequencing.TargetedTaskSequenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,29 +27,34 @@ import java.util.concurrent.Executors;
 public class EnqueuingServiceImpl implements EnqueuingService {
     private static final Logger log = LoggerFactory.getLogger(EnqueuingServiceImpl.class);
 
-    private final ExecutorService enqueingExecutor = Executors.newSingleThreadExecutor();
-    private final TargettedTaskSequenceManager targettedTaskSequenceManager;
+    private final ExecutorService enqueuingExecutor;
+    private final TargetedTaskSequenceManager targetedTaskSequenceManager;
 
-    public EnqueuingServiceImpl(TargettedTaskSequenceManager targettedTaskSequenceManager) {
-        this.targettedTaskSequenceManager = targettedTaskSequenceManager;
+    public EnqueuingServiceImpl(TargetedTaskSequenceManager targetedTaskSequenceManager, int numberOfClients) {
+        this.targetedTaskSequenceManager = targetedTaskSequenceManager;
+        enqueuingExecutor = Executors.newFixedThreadPool(numberOfClients);
     }
 
     @Override
-    public void executeEnqueue(Batch source) {
-        enqueingExecutor.execute(() -> {
-            source.getTasks().forEach(t -> enqueue(t, source.getEventWriter()));
+    public <T extends TargetedTask> void executeEnqueue(TargetedTaskSource<T> source) {
+        log.trace("executeEnqueue({})", source);
+        enqueuingExecutor.execute(() -> {
+            log.debug("Start enqueuing tasks");
+            for (T t: source) {
+                enqueue(t);
+            }
         });
     }
 
-    private void enqueue(DepositImportTaskWrapper w, EventWriter eventWriter) {
-        log.trace("Enqueuing {}", w);
+    private <T extends TargetedTask> void enqueue(T t) {
+        log.trace("Enqueuing {}", t);
         try {
-            targettedTaskSequenceManager.scheduleTask(w);
-            eventWriter.write(w.getDepositId(), TaskEvent.EventType.ENQUEUE, TaskEvent.Result.OK, null);
+            targetedTaskSequenceManager.scheduleTask(t);
+            t.writeEvent(TaskEvent.EventType.ENQUEUE, TaskEvent.Result.OK, null);
         }
         catch (Exception e) {
-            log.error("Enqueing of {} failed", w, e);
-            eventWriter.write(w.getDepositId(), TaskEvent.EventType.ENQUEUE, TaskEvent.Result.FAILED, e.getMessage());
+            log.error("Enqueuing of {} failed", t, e);
+            t.writeEvent(TaskEvent.EventType.ENQUEUE, TaskEvent.Result.FAILED, e.getMessage());
         }
     }
 }

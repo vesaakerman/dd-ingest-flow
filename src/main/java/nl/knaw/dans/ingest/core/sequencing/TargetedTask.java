@@ -15,7 +15,11 @@
  */
 package nl.knaw.dans.ingest.core.sequencing;
 
-public interface TargettedTask extends Runnable {
+import nl.knaw.dans.ingest.core.TaskEvent;
+
+public interface TargetedTask extends Runnable {
 
     String getTarget();
+
+    void writeEvent(TaskEvent.EventType eventType, TaskEvent.Result result, String message);
 }

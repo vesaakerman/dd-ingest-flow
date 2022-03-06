@@ -15,17 +15,14 @@
  */
 package nl.knaw.dans.ingest.core.service;
 
-import nl.knaw.dans.ingest.core.legacy.DepositImportTaskWrapper;
+import nl.knaw.dans.ingest.core.legacy.DepositIngestTaskFactoryWrapper;
 
-import java.util.List;
+import java.nio.file.Path;
 
-public interface Batch {
-
-    EventWriter getEventWriter();
-
-    // TODO: change to iterator or stream, so that this can also be used as a continuous source of tasks?
-    List<DepositImportTaskWrapper> getTasks();
-
-    boolean isFailed();
-
+public class BoundedDepositImportTaskIterator extends  AbstractDepositsImportTaskIterator {
+    public BoundedDepositImportTaskIterator(Path inboxDir, Path outBox, DepositIngestTaskFactoryWrapper taskFactory,
+        EventWriter eventWriter) {
+        super(inboxDir, outBox, taskFactory, eventWriter);
+        readAllDepositsFromInbox();
+    }
 }

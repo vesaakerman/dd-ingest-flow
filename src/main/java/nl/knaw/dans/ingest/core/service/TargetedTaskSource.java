@@ -17,12 +17,11 @@ package nl.knaw.dans.ingest.core.service;
 
 import nl.knaw.dans.ingest.core.sequencing.TargetedTask;
 
-/**
- * Enqueues a sequence of tasks asynchronously, i.e. it schedules the enqueuing action to be executed by a dedicated background thread. the reason is that the enqueuing can take
- * arbitrarily long. In case of a continuous stream of tasks it may even last until the service is stopped, but even in case of a batch it may take too long for the client to wait for
- * the enqueuing to finish.
- */
-public interface EnqueuingService {
+import java.util.Iterator;
 
-    <T extends TargetedTask> void executeEnqueue(TargetedTaskSource<T> source);
+public interface TargetedTaskSource<T extends TargetedTask> extends Iterable<T> {
+
+    @Override
+    Iterator<T> iterator();
+
 }
