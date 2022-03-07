@@ -52,6 +52,21 @@ public class TaskEventDAO extends AbstractDAO<TaskEvent> {
         return currentSession().createQuery(crit).list();
     }
 
+
+/*
+convert to HQL to get "StateStats"
+
+select event_type, count(*)
+from task_event as t1
+where t1.timestamp = (select max(timestamp)
+                      from task_event as t2
+                      where t2.deposit_id = t1.deposit_id and t2.source = 'test/batch'
+                      group by t2.deposit_id)
+group by event_type;
+ */
+
+
+
     // TODO: figure this out
     //    public StateStats getStateStats(String sourceName) {
     //        CriteriaBuilder cb = currentSession().getCriteriaBuilder();
