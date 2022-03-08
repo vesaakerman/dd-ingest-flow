@@ -69,7 +69,7 @@ public class DepositImportTaskWrapper implements TargetedTask, Comparable<Deposi
         catch (RejectedDepositException e) {
             writeEvent(TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.REJECTED, e.getMessage());
         }
-        catch (FailedDepositException e) {
+        catch (Exception e) { // Not necessarily a FailedDepositException !
             writeEvent(TaskEvent.EventType.END_PROCESSING, TaskEvent.Result.FAILED, e.getMessage());
         }
     }
