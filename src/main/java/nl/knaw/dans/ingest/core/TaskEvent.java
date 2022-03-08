@@ -72,7 +72,7 @@ public class TaskEvent {
         this.depositId = depositId.toString();
         this.evenType = evenType.name();
         this.result = result.name();
-        this.message = message;
+        this.message = StringUtils.truncate(message, 1000); // truncate to the max width of message
     }
 
     public long getId() {
