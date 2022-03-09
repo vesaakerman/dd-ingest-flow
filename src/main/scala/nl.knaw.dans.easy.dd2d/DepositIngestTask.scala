@@ -76,11 +76,11 @@ case class DepositIngestTask(deposit: Deposit,
       })
       .doIfFailure {
         case e: RejectedDepositException =>
-          logger.info(s"REJECTED: $deposit")
+          logger.info(s"REJECTED: $deposit", e)
           deposit.setState("REJECTED", e.msg)
           moveDepositToOutbox(REJECTED)
         case e =>
-          logger.info(s"FAILED: $deposit")
+          logger.info(s"FAILED: $deposit", e)
           deposit.setState("FAILED", e.getMessage)
           moveDepositToOutbox(FAILED)
       }

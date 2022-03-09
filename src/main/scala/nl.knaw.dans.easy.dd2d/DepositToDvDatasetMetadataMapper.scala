@@ -157,7 +157,7 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
     }
 
     if (activeMetadataBlocks.contains("dansTemporalSpatial")) {
-      addPrimitiveFieldMultipleValues(temporalSpatialFields, TEMPORAL_COVERAGE, ddm \ "dcmiMetadata" \ "temporal")
+      addPrimitiveFieldMultipleValues(temporalSpatialFields, TEMPORAL_COVERAGE, (ddm \ "dcmiMetadata" \ "temporal").filterNot(TemporalAbr isAbrPeriod))
       addCompoundFieldMultipleValues(temporalSpatialFields, SPATIAL_POINT, (ddm \ "dcmiMetadata" \ "spatial").filter(_.child.exists(_.label == "Point")), SpatialPoint toEasyTsmSpatialPointValueObject)
       addCompoundFieldMultipleValues(temporalSpatialFields, SPATIAL_BOX, ddm \ "dcmiMetadata" \ "spatial" \ "boundedBy", SpatialBox toEasyTsmSpatialBoxValueObject)
       addCvFieldMultipleValues(temporalSpatialFields, SPATIAL_COVERAGE_CONTROLLED, (ddm \ "dcmiMetadata" \ "spatial").filterNot(_.child.exists(_.isInstanceOf[Elem])), SpatialCoverage toControlledSpatialValue)
