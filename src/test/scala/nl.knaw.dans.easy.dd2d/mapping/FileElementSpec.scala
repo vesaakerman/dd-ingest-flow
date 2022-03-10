@@ -68,16 +68,16 @@ class FileElementSpec extends TestSupportFixture {
       restrict = Option(true))
   }
 
-  it should "*not* touch non-ascii chars during sanitation" in {
-    val filepath = "data/directory/path/with/all/leg\u00e5l/chars/n\u00f8rmal_filename.txt"
+  it should "only replace non-ASCII chars in directory names during sanitization" in {
+    val originalFilePath = "data/directory/path/with/all/leg\u00e5l/chars/n\u00f8rmal_filename.txt"
     val xml =
-      <file filepath={filepath}>
+      <file filepath={originalFilePath}>
       </file>
     val result = FileElement.toFileMeta(xml, defaultRestrict = true)
     result shouldBe FileMeta(
-      directoryLabel = Option("directory/path/with/all/leg\u00e5l/chars"),
+      directoryLabel = Option("directory/path/with/all/leg_l/chars"),
       label = Option("n\u00f8rmal_filename.txt"),
-      description = None,
+      description = Option(s"""original_filepath: "directory/path/with/all/leg\u00e5l/chars/n\u00f8rmal_filename.txt""""),
       restrict = Option(true))
   }
 }
