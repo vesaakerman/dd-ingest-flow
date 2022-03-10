@@ -19,9 +19,13 @@ import nl.knaw.dans.lib.dataverse.model.file.FileMeta
 
 import java.nio.file.Paths
 import scala.collection.mutable
+import scala.language.postfixOps
 import scala.xml.Node
 
 object FileElement {
+  private val forbiddenCharactersInFileName = List(':', '*', '?', '"', '<', '>', '|', ';', '#')
+  private val forbiddenCharactersInPathName = forbiddenCharactersInFileName ++ List('(', ')', ',', '\'', '[', ']', '&', '+')
+
   private val accessibilityToRestrict = Map(
     "KNOWN" -> true,
     "NONE" -> true,
@@ -33,10 +37,13 @@ object FileElement {
 
     val pathAttr = node.attribute("filepath").flatMap(_.headOption).getOrElse { throw new RuntimeException("File node without a filepath attribute") }.text
     if (!pathAttr.startsWith("data/")) throw new RuntimeException(s"file outside data folder: $pathAttr")
-    val fileName = Option(Paths.get(pathAttr.substring("data/".length)).getFileName).map(_.toString)
-    val dirPath = Option(Paths.get(pathAttr.substring("data/".length)).getParent).map(_.toString)
+    val pathInDataverseDataset = Paths.get(pathAttr.substring("data/".length))
+    val fileName = Option(pathInDataverseDataset.getFileName).map(_.toString)
+    val sanitizedFileName = fileName.map(replaceForbiddenCharactersInFileName)
+    val dirPath = Option(pathInDataverseDataset.getParent).map(_.toString)
+    val sanitizedDirectoryLabel = dirPath.map(replaceForbiddenCharactersInPath)
     val restr = (node \ "accessibleToRights").headOption.map(_.text).flatMap(accessibilityToRestrict.get).orElse(Some(defaultRestrict))
-    val keyValuePairs = getKeyValuePairs(node, fileName.get)
+    val keyValuePairs = getKeyValuePairs(node, fileName.get, if (fileName != sanitizedFileName || dirPath != sanitizedDirectoryLabel) Option(pathInDataverseDataset.toString) else None)
     val descr = if (keyValuePairs.nonEmpty) {
       if (keyValuePairs.size == 1 && keyValuePairs.keySet.contains("description")) Option(keyValuePairs("description").head)
       else Option(formatKeyValuePairs(keyValuePairs))
@@ -44,18 +51,28 @@ object FileElement {
                 else None
 
     FileMeta(
-      label = fileName,
-      directoryLabel = dirPath,
+      label = sanitizedFileName,
+      directoryLabel = sanitizedDirectoryLabel,
       description = descr,
       restrict = restr,
     )
+  }
+
+  private def replaceForbiddenCharactersInPath(s: String): String = {
+    s.map(char => if (forbiddenCharactersInPathName.contains(char)) '_'
+                  else char)
+  }
+
+  private def replaceForbiddenCharactersInFileName(s: String): String = {
+    s.map(char => if (forbiddenCharactersInFileName.contains(char)) '_'
+                  else char)
   }
 
   def formatKeyValuePairs(pairs: Map[String, List[String]]): String = {
     pairs.map { case (k, vs) => s"""$k: ${ vs.mkString("\"", ",", "\"") }""" }.mkString("; ")
   }
 
-  def getKeyValuePairs(node: Node, fileName: String): Map[String, List[String]] = {
+  def getKeyValuePairs(node: Node, fileName: String, originalFilePath: Option[String]): Map[String, List[String]] = {
     val m = mutable.HashMap[String, mutable.ListBuffer[String]]()
     val fixedKeys = List(
       "hardware",
@@ -82,6 +99,7 @@ object FileElement {
     (node \ "keyvaluepair").toList.foreach(n => m.getOrElseUpdate((n \ "key").head.text, mutable.ListBuffer[String]()).append((n \ "value").text))
     (node \ "title").filterNot(_.text.toLowerCase == fileName.toLowerCase).foreach(n => m.getOrElseUpdate("title", mutable.ListBuffer[String]()).append(n.text))
 
+    originalFilePath.foreach(of => m.getOrElseUpdate("original_filepath", mutable.ListBuffer(of)))
     m.map { case (k, v) => (k, v.toList) }.toMap
   }
 }

@@ -44,5 +44,42 @@ class FileElementSpec extends TestSupportFixture {
       restrict = Option(true))
   }
 
-  // TODO: write more unit tests
+  it should "include original_filepath if directoryLabel or label change during sanitation" in {
+    val xml =
+      <file filepath="data/directory/path/with/&lt;for'bidden&gt;/(chars)/strange?filename*.txt">
+      </file>
+    val result = FileElement.toFileMeta(xml, defaultRestrict = true)
+    result shouldBe FileMeta(
+      directoryLabel = Option("directory/path/with/_for_bidden_/_chars_"),
+      label = Option("strange_filename_.txt"),
+      description = Option("""original_filepath: "directory/path/with/<for'bidden>/(chars)/strange?filename*.txt""""),
+      restrict = Option(true))
+  }
+
+  it should "*not* include original_filepath if directoryLabel or label stay unchanged during sanitation" in {
+    val xml =
+      <file filepath="data/directory/path/with/all/legal/chars/normal_filename.txt">
+      </file>
+    val result = FileElement.toFileMeta(xml, defaultRestrict = true)
+    result shouldBe FileMeta(
+      directoryLabel = Option("directory/path/with/all/legal/chars"),
+      label = Option("normal_filename.txt"),
+      description = None,
+      restrict = Option(true))
+  }
+
+  it should "*not* touch non-ascii chars during sanitation" in {
+    val filepath = "data/directory/path/with/all/leg\u00e5l/chars/n\u00f8rmal_filename.txt"
+    val xml =
+      <file filepath={filepath}>
+      </file>
+    val result = FileElement.toFileMeta(xml, defaultRestrict = true)
+    result shouldBe FileMeta(
+      directoryLabel = Option("directory/path/with/all/leg\u00e5l/chars"),
+      label = Option("n\u00f8rmal_filename.txt"),
+      description = None,
+      restrict = Option(true))
+  }
+
+
 }
