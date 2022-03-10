@@ -24,7 +24,7 @@ import scala.xml.Node
 
 object FileElement {
   private val forbiddenCharactersInFileName = List(':', '*', '?', '"', '<', '>', '|', ';', '#')
-  private val forbiddenCharactersInPathName = forbiddenCharactersInFileName ++ List('(', ')', ',', '\'', '[', ']', '&', '+')
+  private val allowedCharactersInDirectoryLabel = List('_', '-', '.', '\\', '/', ' ') ++ ('0' to '9') ++ ('a' to 'z') ++ ('A' to 'Z')
 
   private val accessibilityToRestrict = Map(
     "KNOWN" -> true,
@@ -59,8 +59,8 @@ object FileElement {
   }
 
   private def replaceForbiddenCharactersInPath(s: String): String = {
-    s.map(char => if (forbiddenCharactersInPathName.contains(char)) '_'
-                  else char)
+    s.map(char => if (allowedCharactersInDirectoryLabel.contains(char)) char
+                  else '_')
   }
 
   private def replaceForbiddenCharactersInFileName(s: String): String = {

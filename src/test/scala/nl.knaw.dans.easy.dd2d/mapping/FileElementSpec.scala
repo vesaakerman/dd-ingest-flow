@@ -80,6 +80,4 @@ class FileElementSpec extends TestSupportFixture {
       description = None,
       restrict = Option(true))
   }
-
-
 }
