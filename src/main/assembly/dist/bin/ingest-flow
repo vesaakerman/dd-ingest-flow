@@ -9,6 +9,10 @@ service_baseurl = 'http://localhost:20300'
 
 
 def start_import(path, continue_previous, migration):
+    status = os.system("chmod -R g+w %s" % path)
+    if status != 0:
+        print("Could not make import batch available to group")
+        exit(1)
     r = requests.post('%s/imports/:start' % service_baseurl, json={
         'batch': os.path.abspath(path),
         'continue': continue_previous,
