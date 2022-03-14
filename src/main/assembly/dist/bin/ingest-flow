@@ -14,10 +14,10 @@ file_writeable_to_group = lambda f: os.stat(f).st_mode & stat.S_IWGRP > 0
 def start_import(path, continue_previous, migration):
     if not has_dirtree_pred(path, file_writeable_to_group):
         chmod_command = "chmod -R g+w %s" % path
-        print("Some files in the import batch do not give the group owner write permissions. Executing '%s' to fix it" % chmod_command)
+        print("Some files in the import batch do not give the owner group write permissions. Executing '%s' to fix it" % chmod_command)
         status = os.system(chmod_command)
         if status != 0:
-            print("Could not make import batch writeable for group. Please, ensure that the ")
+            print("Could not give owner group write permissions. Possibly your account is not the owner user of the files.")
             return
     print("Sending start import request to server...")
     r = requests.post('%s/imports/:start' % service_baseurl, json={
