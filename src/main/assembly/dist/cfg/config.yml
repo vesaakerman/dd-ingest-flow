@@ -13,12 +13,16 @@ server:
 
 ingestFlow:
   import:
+    inbox: /var/opt/dans.knaw.nl/tmp/import/inbox
+    outbox: /var/opt/dans.knaw.nl/tmp/import/outbox
+
+  migration:
     inbox: /var/opt/dans.knaw.nl/tmp/migration/deposits
     outbox: /var/opt/dans.knaw.nl/tmp/migration/out
 
   autoIngest:
-    inbox: /var/opt/dans.knaw.nl/tmp/auto-ingest/in
-    outbox: /var/opt/dans.knaw.nl/tmp/auto-ingest/out
+    inbox: /var/opt/dans.knaw.nl/tmp/auto-ingest/inbox
+    outbox: /var/opt/dans.knaw.nl/tmp/auto-ingest/outbox
 
   #
   # Filtering. Files with a path matching the pattern will not be added to the dataset. Renaming/moving files is not affected.
