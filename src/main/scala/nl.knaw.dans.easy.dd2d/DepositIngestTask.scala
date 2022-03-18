@@ -36,7 +36,7 @@ import scala.collection.mutable.ListBuffer
 import scala.language.postfixOps
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
-import scala.xml.Elem
+import scala.xml.{ Elem, Node }
 
 /**
  * Checks one deposit and then ingests it into Dataverse.
@@ -151,8 +151,16 @@ case class DepositIngestTask(deposit: Deposit,
       datasetContacts <- getDatasetContacts
       ddm <- deposit.tryDdm
       optAgreements <- deposit.tryOptAgreementsXml
+      _ <- checkPersonalDataPresent(optAgreements)
       dataverseDataset <- datasetMetadataMapper.toDataverseDataset(ddm, optAgreements, optDateOfDeposit, datasetContacts, deposit.vaultMetadata)
     } yield dataverseDataset
+  }
+
+  /*
+   * See DD-901. For non-migration imports we will accept missing agreement.xml for now
+   */
+  protected def checkPersonalDataPresent(optAgreements: Option[Node]): Try[Unit] = {
+    Success(())
   }
 
   protected def getDateOfDeposit: Try[Option[String]] = Try {

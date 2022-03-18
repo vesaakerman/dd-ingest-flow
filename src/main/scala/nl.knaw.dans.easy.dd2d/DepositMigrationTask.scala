@@ -81,6 +81,11 @@ class DepositMigrationTask(deposit: Deposit,
     new DatasetCreator(deposit, optFileExclusionPattern, zipFileHandler, depositorRole, isMigration = true, dataverseDataset, variantToLicense, supportedLicenses, instance, migrationInfo)
   }
 
+  override protected def checkPersonalDataPresent(optAgreements: Option[Node]): Try[Unit] = {
+    if (optAgreements.isEmpty) Failure(RejectedDepositException(deposit, "Migration deposit MUST have an agreements.xml"))
+    else Success(())
+  }
+
   override protected def getDateOfDeposit: Try[Option[String]] = {
     for {
       optAmd <- deposit.tryOptAmd

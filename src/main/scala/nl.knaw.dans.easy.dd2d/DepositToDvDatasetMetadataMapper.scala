@@ -130,9 +130,9 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
     if (activeMetadataBlocks.contains("dansRights")) {
       checkRequiredField(RIGHTS_HOLDER, ddm \ "dcmiMetadata" \ "rightsHolder")
       addPrimitiveFieldMultipleValues(rightsFields, RIGHTS_HOLDER, ddm \ "dcmiMetadata" \ "rightsHolder", AnyElement toText)
-      optAgreements.foreach { agreements =>
+      optAgreements.map { agreements =>
         addCvFieldSingleValue(rightsFields, PERSONAL_DATA_PRESENT, agreements \ "personalDataStatement", PersonalStatement toHasPersonalDataValue)
-      }
+      }.doIfNone(() => addCvFieldSingleValue(rightsFields, PERSONAL_DATA_PRESENT, "Unknown"))
       addPrimitiveFieldMultipleValues(rightsFields, RIGHTS_HOLDER, (ddm \ "dcmiMetadata" \ "contributorDetails" \ "author").filter(DcxDaiAuthor isRightsHolder), DcxDaiAuthor toRightsHolder)
       addPrimitiveFieldMultipleValues(rightsFields, RIGHTS_HOLDER, (ddm \ "dcmiMetadata" \ "contributorDetails" \ "organization").filter(DcxDaiOrganization isRightsHolder), DcxDaiOrganization toRightsHolder)
       addCvFieldMultipleValues(rightsFields, LANGUAGE_OF_METADATA, (ddm \ "profile" \ "_") ++ (ddm \ "dcmiMetadata" \ "_"), Language.langAttributeToMetadataLanguage(iso1ToDataverseLanguage, iso2ToDataverseLanguage))
@@ -232,6 +232,13 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
     val values = sourceNodes.map(nodeTransformer).filter(_.isDefined).map(_.get).toList
     metadataBlockFields.getOrElseUpdate(name, new CvFieldBuilder(name, multipleValues = false)) match {
       case cfb: CvFieldBuilder => values.filterNot(StringUtils.isBlank).foreach(cfb.addValue)
+      case _ => throw new IllegalArgumentException("Trying to add non-controlled-vocabulary value(s) to controlled vocabulary field")
+    }
+  }
+
+  private def addCvFieldSingleValue(metadataBlockFields: mutable.HashMap[String, AbstractFieldBuilder], name: String, value: String): Unit = {
+    metadataBlockFields.getOrElseUpdate(name, new CvFieldBuilder(name, multipleValues = false)) match {
+      case cfb: CvFieldBuilder => cfb.addValue(value)
       case _ => throw new IllegalArgumentException("Trying to add non-controlled-vocabulary value(s) to controlled vocabulary field")
     }
   }
