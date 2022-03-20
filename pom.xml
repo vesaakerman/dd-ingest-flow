@@ -49,12 +49,12 @@
         <dependency>
             <groupId>nl.knaw.dans</groupId>
             <artifactId>dans-java-utils</artifactId>
-            <version>0.0.6</version>
+            <version>0.0.8</version>
         </dependency>
         <dependency>
             <groupId>nl.knaw.dans.lib</groupId>
             <artifactId>dans-dataverse-scala-lib_2.12</artifactId>
-            <version>4.4.0</version>
+            <version>4.5.0</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
