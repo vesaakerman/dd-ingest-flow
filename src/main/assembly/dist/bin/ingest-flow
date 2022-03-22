@@ -40,6 +40,7 @@ def has_dirtree_pred(dir, pred):
 
 def list_events(params):
     r = requests.get('%s/events' % service_baseurl, headers={'Accept': 'text/csv'}, params=params)
+    r.encoding = r.apparent_encoding
     print(r.text)
 
 parser = argparse.ArgumentParser(add_help=True)
