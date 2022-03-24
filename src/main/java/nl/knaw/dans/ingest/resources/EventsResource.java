@@ -35,7 +35,7 @@ public class EventsResource {
     }
 
     @GET
-    @Produces("text/csv")
+    @Produces("text/csv;charset=utf8")
     @UnitOfWork
     public List<TaskEvent> getEvents(@QueryParam("source") String batchName, @QueryParam("depositId") String depositId) {
         return taskEventDAO.getEvents(batchName, depositId);
