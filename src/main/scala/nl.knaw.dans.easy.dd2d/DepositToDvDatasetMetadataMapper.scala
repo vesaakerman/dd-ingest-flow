@@ -252,7 +252,7 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
   private def addCvFieldMultipleValues(metadataBlockFields: mutable.HashMap[String, AbstractFieldBuilder], name: String, sourceNodes: NodeSeq, nodeTransformer: Node => Option[String]): Unit = {
     val values = sourceNodes.map(nodeTransformer).filter(_.isDefined).map(_.get).toList
     metadataBlockFields.getOrElseUpdate(name, new CvFieldBuilder(name)) match {
-      case cfb: CvFieldBuilder => values.filterNot(StringUtils.isBlank).foreach(cfb.addValue)
+      case cfb: CvFieldBuilder => values.filterNot(StringUtils.isBlank).sorted.foreach(cfb.addValue)
       case _ => throw new IllegalArgumentException("Trying to add non-controlled-vocabulary value(s) to controlled vocabulary field")
     }
   }
