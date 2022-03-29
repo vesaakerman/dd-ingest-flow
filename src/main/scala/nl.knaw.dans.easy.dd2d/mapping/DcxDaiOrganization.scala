@@ -68,4 +68,17 @@ object DcxDaiOrganization extends Contributor with BlockCitation {
     }
     m.toJsonObject
   }
+
+  def inAnyOfRoles(roles: List[String])(node: Node): Boolean = {
+    val author = parseOrganization(node)
+    roles.exists(author.role.contains)
+  }
+
+  def toGrantNumberValueObject(node: Node): JsonObject = {
+    val m = FieldMap()
+    val organization = parseOrganization(node)
+    m.addPrimitiveField(GRANT_NUMBER_AGENCY, organization.name.getOrElse(""))
+    m.addPrimitiveField(GRANT_NUMBER_VALUE, "")
+    m.toJsonObject
+  }
 }

@@ -99,6 +99,7 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
       addCompoundFieldMultipleValues(citationFields, KEYWORD, (ddm \ "dcmiMetadata" \ "subject").filter(Subject isPanTerm), Subject toPanKeywordValue)
       addCompoundFieldMultipleValues(citationFields, KEYWORD, (ddm \ "dcmiMetadata" \ "subject").filter(Subject isAatTerm), Subject toAatKeywordValue)
       addCompoundFieldMultipleValues(citationFields, KEYWORD, (ddm \ "dcmiMetadata" \ "language").filterNot(Language isIsoLanguage), Language toKeywordValue)
+      addCompoundFieldMultipleValues(citationFields, PUBLICATION, (ddm \ "dcmiMetadata" \ "identifier").filter(Identifier isRelatedPublication), Identifier toRelatedPublicationValue)
       addCvFieldMultipleValues(citationFields, LANGUAGE, ddm \ "dcmiMetadata" \ "language", Language.toCitationBlockLanguage(iso1ToDataverseLanguage, iso2ToDataverseLanguage))
       addPrimitiveFieldSingleValue(citationFields, PRODUCTION_DATE, ddm \ "profile" \ "created", DateTypeElement toYearMonthDayFormat)
 
@@ -108,8 +109,15 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
         case node if node.label == "contributorDetails" && (node \ "author").nonEmpty =>
           (node \ "author").filterNot(DcxDaiAuthor isRightsHolder).foreach(author => addCompoundFieldMultipleValues(citationFields, CONTRIBUTOR, author, DcxDaiAuthor toContributorValueObject))
         case node if node.label == "contributorDetails" && (node \ "organization").nonEmpty =>
-          (node \ "organization").filterNot(DcxDaiOrganization isRightsHolder).foreach(organization => addCompoundFieldMultipleValues(citationFields, CONTRIBUTOR, organization, DcxDaiOrganization toContributorValueObject))
+          (node \ "organization").filterNot(DcxDaiOrganization inAnyOfRoles(List("RightsHolder", "Funder"))).foreach(organization => addCompoundFieldMultipleValues(citationFields, CONTRIBUTOR, organization, DcxDaiOrganization toContributorValueObject))
       }
+
+      // Add contributors with role Funder as Grant Number with only an agency subfield
+      contributors.foreach {
+        case node if node.label == "contributorDetails" && (node \ "organization").nonEmpty =>
+          (node \ "organization").filter(DcxDaiOrganization inAnyOfRoles(List("Funder"))).foreach(organization => addCompoundFieldMultipleValues(citationFields, GRANT_NUMBER, organization, DcxDaiOrganization toGrantNumberValueObject))
+      }
+      addCompoundFieldMultipleValues(citationFields, GRANT_NUMBER, (ddm \ "dcmiMetadata" \ "identifier").filter(Identifier isNwoGrantNumber), Identifier toNwoGrantNumberValue)
 
       addCompoundFieldMultipleValues(citationFields, DISTRIBUTOR, ddm \ "dcmiMetadata" \ "publisher", Publisher toDistributorValueObject)
       addPrimitiveFieldSingleValue(citationFields, DISTRIBUTION_DATE, ddm \ "profile" \ "available", DateTypeElement toYearMonthDayFormat)
@@ -118,11 +126,7 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
       // TODO: what to set dateOfDeposit to for SWORD or multi-deposits? Take from deposit.properties?
 
       addCompoundFieldMultipleValues(citationFields, DATE_OF_COLLECTION, ddm \ "dcmiMetadata" \ "datesOfCollection", DatesOfCollection.toDateOfCollectionValue)
-
       addPrimitiveFieldMultipleValues(citationFields, DATA_SOURCES, ddm \ "dcmiMetadata" \ "source")
-
-      addCompoundFieldMultipleValues(citationFields, PUBLICATION, (ddm \ "dcmiMetadata" \ "identifier").filter(Identifier isRelatedPublication), Identifier toRelatedPublicationValue)
-      addCompoundFieldMultipleValues(citationFields, GRANT_NUMBER, (ddm \ "dcmiMetadata" \ "identifier").filter(Identifier isNwoGrantNumber), Identifier toNwoGrantNumberValue)
     }
     else {
       throw new IllegalStateException("Metadatablock citation should always be active")
