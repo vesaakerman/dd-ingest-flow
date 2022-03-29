@@ -66,4 +66,20 @@ class DcxDaiOrganizationSpec extends TestSupportFixture with BlockCitation {
     findString(result, s"$AUTHOR_IDENTIFIER_SCHEME.value") shouldBe "ISNI"
     findString(result, s"$AUTHOR_IDENTIFIER.value") shouldBe "http://isni.org/isni/0000000121032683"
   }
+
+  "toGrantNumberValueObject" should "create a grantnumber with only an organization subfield" in {
+    val contributor =
+      <dcx-dai:organization>
+          <dcx-dai:name xml:lang="en">Anti-Vampire League</dcx-dai:name>
+          <dcx-dai:role>Funder</dcx-dai:role>
+          <dcx-dai:ISNI>http://isni.org/isni/0000000121032683</dcx-dai:ISNI>
+      </dcx-dai:organization>
+    DcxDaiOrganization.inAnyOfRoles(List("Funder"))(contributor) shouldBe true
+
+    val result = DcxDaiOrganization.toGrantNumberValueObject(contributor)
+    val s = Serialization.writePretty(result)
+    debug(s)
+    findString(s, s"$GRANT_NUMBER_VALUE.value") shouldBe ""
+    findString(s, s"$GRANT_NUMBER_AGENCY.value") shouldBe "Anti-Vampire League"
+  }
 }
