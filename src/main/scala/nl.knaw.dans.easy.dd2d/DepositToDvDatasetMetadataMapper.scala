@@ -83,7 +83,7 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
       addCompoundFieldMultipleValues(citationFields, DESCRIPTION, ddm \ "profile" \ "description", Description toDescriptionValueObject)
       addCompoundFieldMultipleValues(citationFields, DESCRIPTION, if (alternativeTitles.isEmpty) NodeSeq.Empty
                                                                   else alternativeTitles.tail, Description toDescriptionValueObject)
-      val otherDescriptions = (ddm \ "dcmiMetadata" \ "description") ++
+      val otherDescriptions =
         (ddm \ "dcmiMetadata" \ "date") ++
         (ddm \ "dcmiMetadata" \ "dateAccepted") ++
         (ddm \ "dcmiMetadata" \ "dateCopyrighted ") ++
@@ -92,6 +92,7 @@ class DepositToDvDatasetMetadataMapper(deduplicate: Boolean,
         (ddm \ "dcmiMetadata" \ "valid") ++
         (ddm \ "dcmiMetadata" \ "coverage")
       addCompoundFieldMultipleValues(citationFields, DESCRIPTION, otherDescriptions, Description toPrefixedDescription)
+      addCompoundFieldMultipleValues(citationFields, DESCRIPTION, (ddm \ "dcmiMetadata" \ "description").filter(Description isTechnicalInfo), Description toDescriptionValueObject)
 
       checkRequiredField(SUBJECT, ddm \ "profile" \ "audience")
       addCvFieldMultipleValues(citationFields, SUBJECT, ddm \ "profile" \ "audience", Audience toCitationBlockSubject)

@@ -54,4 +54,9 @@ object Description extends BlockCitation {
       .map(_.replaceAll(newline, "<br>"))
       .mkString
   }
+
+  def isTechnicalInfo(node: Node): Boolean = {
+    hasAttribute(node, "descriptionType", "TechnicalInfo")
+  }
+
 }
